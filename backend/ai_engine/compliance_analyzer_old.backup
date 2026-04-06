@@ -1,0 +1,579 @@
+"""
+Compliance Analyzer - Main AI Engine Component
+Uses Groq API for Indian compliance analysis
+Handles DPDP Act, RBI regulations, and other Indian compliance requirements
+"""
+
+import logging
+from typing import Dict, List, Any, Optional
+import asyncio
+from datetime import datetime
+import json
+import os
+
+logger = logging.getLogger(__name__)
+
+class ComplianceAnalyzer:
+    """
+    Main compliance analyzer using Groq for Indian compliance frameworks
+    - DPDP (Digital Personal Data Protection) Act
+    - RBI (Reserve Bank of India) Regulations
+    - IT Act 2000
+    """
+    
+    def __init__(self, policies_dir: str = "policies"):
+        """
+        Initialize compliance analyzer with Groq
+        
+        Args:
+            policies_dir: Directory for policy documents
+        """
+        self.policies_dir = policies_dir
+        self.groq_analyzer = None
+        self.policy_processor = None
+        self.repository_scanner = None
+        
+        self._initialize_pipelines()
+    
+    def _initialize_pipelines(self):
+        """Initialize AI pipelines with Groq"""
+        try:
+            # Initialize Groq Analyzer
+            logger.info("Initializing Groq Analyzer for Indian Compliance...")
+            try:
+                from .groq_analyzer import GroqIndianComplianceAnalyzer
+                self.groq_analyzer = GroqIndianComplianceAnalyzer()
+                logger.info("✓ Groq Analyzer initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Groq Analyzer: {e}")
+                raise ValueError("Groq API not available. Ensure GROQ_API_KEY is set.")
+            
+            # Initialize Policy Processor (for policy management)
+            logger.info("Initializing Policy Processor...")
+            try:
+                try:
+                    from .policy_processor import PolicyProcessor
+                except ImportError:
+                    from policy_processor import PolicyProcessor
+                self.policy_processor = PolicyProcessor(self.policies_dir)
+                logger.info("✓ Policy processor initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Policy Processor: {e}")
+                self.policy_processor = None
+            
+            # Initialize Repository Scanner
+            logger.info("Initializing Repository Scanner...")
+            try:
+                try:
+                    from .repository_scanner import RepositoryScanner
+                except ImportError:
+                    from repository_scanner import RepositoryScanner
+                self.repository_scanner = RepositoryScanner(self.policy_processor)
+                logger.info("✓ Repository scanner initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Repository Scanner: {e}")
+                self.repository_scanner = None
+            
+            logger.info("✓ Compliance Analyzer initialized with Groq")
+                
+        except Exception as e:
+            logger.error(f"Pipeline initialization failed: {e}")
+            raise
+    
+    def analyze_code(self, code_snippet: str, file_type: str = "python") -> Dict[str, Any]:
+        """
+        Analyze code for Indian compliance violations using Groq
+        
+        Args:
+            code_snippet: Code to analyze
+            file_type: Type of code file
+            
+        Returns:
+            Analysis results
+        """
+        if not self.groq_analyzer:
+            return {
+                "error": "Groq analyzer not available",
+                "status": "failed"
+            }
+        
+        try:
+            logger.info(f"Analyzing {file_type} code for compliance violations")
+            
+            # Use asyncio to run the async Groq analysis
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            results = loop.run_until_complete(
+                self.groq_analyzer.analyze_code_for_compliance(code_snippet, file_type)
+            )
+            loop.close()
+            
+            return results
+        except Exception as e:
+            logger.error(f"Code analysis failed: {e}")
+            return {
+                "error": str(e),
+                "status": "failed",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def analyze_data_handling(self, code: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+        """
+        Analyze data handling for DPDP compliance using Groq
+        
+        Args:
+            code: Code to analyze
+            context: Additional context
+            
+        Returns:
+            DPDP compliance assessment
+        """
+        if not self.groq_analyzer:
+            return {"error": "Groq analyzer not available"}
+        
+        try:
+            logger.info("Analyzing data handling for DPDP compliance")
+            return await self.groq_analyzer.analyze_data_handling(code, context)
+        except Exception as e:
+            logger.error(f"Data handling analysis failed: {e}")
+            return {"error": str(e)}
+    
+    async def check_rbi_compliance(self, code: str, system_type: str = "payment_system") -> Dict[str, Any]:
+        """
+        Check RBI compliance for financial systems using Groq
+        
+        Args:
+            code: Code to analyze
+            system_type: Type of system
+            
+        Returns:
+            RBI compliance assessment
+        """
+        if not self.groq_analyzer:
+            return {"error": "Groq analyzer not available", "rbi_compliant": False}
+        
+        try:
+            logger.info(f"Checking RBI compliance for {system_type}")
+            return await self.groq_analyzer.check_rbi_compliance(code, system_type)
+        except Exception as e:
+            logger.error(f"RBI compliance check failed: {e}")
+            return {"error": str(e), "rbi_compliant": False}
+    
+    async def generate_remediation(self, violation: Dict[str, Any], code: str) -> Dict[str, Any]:
+        """
+        Generate remediation steps for a compliance violation using Groq
+        
+        Args:
+            violation: The compliance violation details
+            code: The problematic code
+            
+        Returns:
+            Remediation steps
+        """
+        if not self.groq_analyzer:
+            return {"error": "Groq analyzer not available"}
+        
+        try:
+            logger.info(f"Generating remediation for {violation.get('framework')} violation")
+            return await self.groq_analyzer.generate_remediation_steps(violation, code)
+        except Exception as e:
+            logger.error(f"Remediation generation failed: {e}")
+            return {"error": str(e)}
+    
+    def get_compliance_status(self) -> Dict[str, Any]:
+        """Get system compliance status"""
+        if not self.groq_analyzer:
+            return {"status": "unavailable", "error": "Groq analyzer not initialized"}
+        
+        return self.groq_analyzer.get_compliance_status_report()
+    
+    def analyze_repository_for_compliance(self, repo_path: str) -> Dict[str, Any]:
+        """
+        Scan repository for compliance violations
+        
+        Args:
+            repo_path: Path to repository
+            
+        Returns:
+            Repository analysis results
+        """
+        if not self.repository_scanner:
+            logger.warning("Repository scanner not available")
+            return {"error": "Repository scanner not available"}
+        
+        try:
+            logger.info(f"Scanning repository: {repo_path}")
+            return self.repository_scanner.scan_repository(repo_path)
+        except Exception as e:
+            logger.error(f"Repository scan failed: {e}")
+            return {"error": str(e)}
+    
+    # Deprecated methods kept for backward compatibility
+    def analyze_text(self, text: str, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+        """
+        Deprecated: Use analyze_code() instead
+        This is kept for backward compatibility
+        """
+        logger.warning("analyze_text() is deprecated. Use analyze_code() instead.")
+        return self.analyze_code(text, "text")
+        
+        try:
+            # Privacy data recommendations
+            privacy_entities = results.get("spacy_results", {}).get("compliance_entities", [])
+            high_risk_entities = [e for e in privacy_entities if e.get("privacy_risk") == "HIGH"]
+            
+            if high_risk_entities:
+                recommendations.append({
+                    "category": "data_protection",
+                    "priority": "HIGH",
+                    "recommendation": f"Implement proper data protection measures for {len(high_risk_entities)} high-risk data elements detected",
+                    "details": "Consider encryption, access controls, and data minimization practices"
+                })
+            
+            # Legal obligations recommendations
+            obligations = results.get("combined_analysis", {}).get("compliance_obligations", [])
+            if len(obligations) > 3:
+                recommendations.append({
+                    "category": "compliance_tracking",
+                    "priority": "MEDIUM",
+                    "recommendation": f"Establish tracking system for {len(obligations)} compliance obligations",
+                    "details": "Implement regular compliance audits and monitoring procedures"
+                })
+            
+            # Document completeness
+            completeness_score = results.get("spacy_results", {}).get("legal_analysis", {}).get("completeness_score", 0.0)
+            if completeness_score < 0.7:
+                recommendations.append({
+                    "category": "documentation",
+                    "priority": "MEDIUM",
+                    "recommendation": "Improve document completeness and legal coverage",
+                    "details": f"Current completeness score: {completeness_score:.2f}. Consider adding missing legal sections"
+                })
+            
+            # Classification confidence
+            classification_confidence = results.get("legal_bert_results", {}).get("classification", {}).get("confidence", 0.0)
+            if classification_confidence < 0.6:
+                recommendations.append({
+                    "category": "legal_review",
+                    "priority": "LOW",
+                    "recommendation": "Consider professional legal review",
+                    "details": f"AI classification confidence is low ({classification_confidence:.2f})"
+                })
+            
+            return recommendations
+            
+        except Exception as e:
+            logger.error(f"Recommendation generation failed: {e}")
+            return [{"category": "error", "priority": "LOW", "recommendation": f"Error generating recommendations: {str(e)}"}]
+    
+    def _quick_rule_based_analysis(self, text: str) -> Dict[str, Any]:
+        """Fallback rule-based analysis when AI pipelines are unavailable"""
+        text_lower = text.lower()
+        
+        # Simple keyword-based analysis
+        compliance_keywords = {
+            "privacy": ["privacy", "personal data", "personal information", "pii"],
+            "security": ["security", "encryption", "password", "authentication"],
+            "liability": ["liability", "damages", "indemnification", "limitation"],
+            "termination": ["termination", "cancellation", "expiry", "end"],
+            "governing_law": ["governing law", "jurisdiction", "applicable law"]
+        }
+        
+        found_categories = {}
+        for category, keywords in compliance_keywords.items():
+            count = sum(1 for keyword in keywords if keyword in text_lower)
+            found_categories[category] = count > 0
+        
+        return {
+            "rule_based_analysis": True,
+            "categories_detected": found_categories,
+            "total_categories": sum(1 for present in found_categories.values() if present),
+            "analysis_method": "keyword_matching"
+        }
+    
+    async def analyze_text_async(self, text: str, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+        """Async version of text analysis"""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self.analyze_text, text, analysis_type)
+    
+    def get_pipeline_status(self) -> Dict[str, Any]:
+        """Get status of AI pipelines"""
+        return {
+            "legal_bert_available": self.use_legal_bert and self.legal_bert_pipeline is not None,
+            "spacy_available": self.use_spacy and self.entity_extractor is not None,
+            "policy_processor_available": self.policy_processor is not None,
+            "repository_scanner_available": self.repository_scanner is not None,
+            "pipelines_loaded": [
+                name for name, available in [
+                    ("legal-bert", self.use_legal_bert and self.legal_bert_pipeline is not None),
+                    ("spacy", self.use_spacy and self.entity_extractor is not None),
+                    ("policy-processor", self.policy_processor is not None),
+                    ("repository-scanner", self.repository_scanner is not None)
+                ] if available
+            ]
+        }
+    
+    # New Policy Management Methods
+    
+    def import_policies(self, policies_folder_path: str) -> Dict[str, Any]:
+        """
+        Import legal policies from a folder and convert them to compliance rules
+        
+        Args:
+            policies_folder_path: Path to folder containing policy documents
+            
+        Returns:
+            Import results with processing status
+        """
+        if not self.policy_processor:
+            logger.error("Policy processor not available")
+            return {"error": "Policy processor not initialized"}
+        
+        try:
+            logger.info(f"Importing policies from {policies_folder_path}")
+            results = self.policy_processor.import_policy_folder(policies_folder_path)
+            
+            # Reload scanner with new rules
+            if self.repository_scanner:
+                self.repository_scanner._load_compliance_rules()
+            
+            logger.info(f"Policy import completed: {results.get('processed_count', 0)} policies processed")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Policy import failed: {e}")
+            return {"error": str(e)}
+    
+    def get_compliance_rules(self) -> Dict[str, Any]:
+        """Get all compliance rules generated from policies"""
+        if not self.policy_processor:
+            return {"error": "Policy processor not available"}
+        
+        return self.policy_processor.get_compliance_rules_for_scanning()
+    
+    def get_policy_summary(self) -> Dict[str, Any]:
+        """Get summary of all processed policies"""
+        if not self.policy_processor:
+            return {"error": "Policy processor not available"}
+        
+        return self.policy_processor.get_policy_summary()
+    
+    def process_single_policy(self, policy_content: str, policy_id: str = None) -> Dict[str, Any]:
+        """
+        Process a single policy document
+        
+        Args:
+            policy_content: The policy text content
+            policy_id: Optional policy identifier
+            
+        Returns:
+            Processing results
+        """
+        if not self.policy_processor:
+            return {"error": "Policy processor not available"}
+        
+        if not policy_id:
+            policy_id = f"manual_policy_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        try:
+            result = self.policy_processor.process_policy(
+                policy_id=policy_id,
+                content=policy_content
+            )
+            
+            # Reload scanner with new rules
+            if self.repository_scanner:
+                self.repository_scanner._load_compliance_rules()
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Single policy processing failed: {e}")
+            return {"error": str(e)}
+    
+    # New Repository Scanning Methods
+    
+    def scan_repository(self, repo_path: str, file_extensions: List[str] = None) -> Dict[str, Any]:
+        """
+        Scan repository for compliance violations using AI-generated rules
+        
+        Args:
+            repo_path: Path to repository to scan
+            file_extensions: File extensions to scan (optional)
+            
+        Returns:
+            Comprehensive scan results
+        """
+        if not self.repository_scanner:
+            logger.error("Repository scanner not available")
+            return {"error": "Repository scanner not initialized"}
+        
+        try:
+            logger.info(f"Scanning repository: {repo_path}")
+            results = self.repository_scanner.scan_repository(repo_path, file_extensions)
+            logger.info(f"Repository scan completed with {results.get('scan_summary', {}).get('total_violations', 0)} violations")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Repository scan failed: {e}")
+            return {"error": str(e)}
+    
+    def generate_scan_report(self, scan_results: Dict[str, Any]) -> str:
+        """
+        Generate human-readable compliance scan report
+        
+        Args:
+            scan_results: Results from repository scan
+            
+        Returns:
+            Formatted report string
+        """
+        if not self.repository_scanner:
+            return "Repository scanner not available"
+        
+        return self.repository_scanner.get_scan_report(scan_results)
+    
+    async def scan_repository_async(self, repo_path: str, file_extensions: List[str] = None) -> Dict[str, Any]:
+        """Async version of repository scanning"""
+        if not self.repository_scanner:
+            return {"error": "Repository scanner not initialized"}
+        
+        return await self.repository_scanner.scan_repository_async(repo_path, file_extensions)
+    
+    # Enhanced Analysis Methods
+    
+    def comprehensive_compliance_analysis(self, repo_path: str, policies_folder: str = None) -> Dict[str, Any]:
+        """
+        Perform comprehensive compliance analysis including policy import and repository scanning
+        
+        Args:
+            repo_path: Path to repository to analyze
+            policies_folder: Optional path to policies folder
+            
+        Returns:
+            Complete compliance analysis results
+        """
+        analysis_start = datetime.now()
+        
+        results = {
+            "analysis_type": "comprehensive_compliance",
+            "repository_path": repo_path,
+            "timestamp": analysis_start.isoformat(),
+            "policy_import": {},
+            "repository_scan": {},
+            "compliance_summary": {},
+            "recommendations": [],
+            "analysis_duration": 0
+        }
+        
+        try:
+            # Import policies if folder provided
+            if policies_folder:
+                logger.info("Importing policies...")
+                results["policy_import"] = self.import_policies(policies_folder)
+            
+            # Scan repository
+            logger.info("Scanning repository...")
+            results["repository_scan"] = self.scan_repository(repo_path)
+            
+            # Generate compliance summary
+            results["compliance_summary"] = self._generate_compliance_summary(
+                results["policy_import"],
+                results["repository_scan"]
+            )
+            
+            # Generate recommendations
+            results["recommendations"] = self._generate_compliance_recommendations(
+                results["repository_scan"]
+            )
+            
+            # Calculate analysis duration
+            analysis_end = datetime.now()
+            results["analysis_duration"] = (analysis_end - analysis_start).total_seconds()
+            
+            logger.info(f"Comprehensive compliance analysis completed in {results['analysis_duration']:.2f}s")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Comprehensive compliance analysis failed: {e}")
+            results["error"] = str(e)
+            results["analysis_duration"] = (datetime.now() - analysis_start).total_seconds()
+            return results
+    
+    def _generate_compliance_summary(self, policy_import: Dict[str, Any], repository_scan: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate overall compliance summary"""
+        try:
+            scan_summary = repository_scan.get("scan_summary", {})
+            
+            return {
+                "policies_processed": policy_import.get("processed_count", 0),
+                "compliance_rules_generated": len(self.get_compliance_rules().get("rules", [])),
+                "total_violations": scan_summary.get("total_violations", 0),
+                "compliance_score": repository_scan.get("compliance_score", 0.0),
+                "risk_level": self._determine_risk_level(scan_summary),
+                "files_scanned": scan_summary.get("total_files_scanned", 0),
+                "files_with_violations": scan_summary.get("files_with_violations", 0)
+            }
+            
+        except Exception as e:
+            logger.error(f"Compliance summary generation failed: {e}")
+            return {"error": str(e)}
+    
+    def _determine_risk_level(self, scan_summary: Dict[str, Any]) -> str:
+        """Determine overall risk level based on scan results"""
+        severity_breakdown = scan_summary.get("severity_breakdown", {})
+        high_violations = severity_breakdown.get("HIGH", 0)
+        medium_violations = severity_breakdown.get("MEDIUM", 0)
+        
+        if high_violations > 5:
+            return "CRITICAL"
+        elif high_violations > 0 or medium_violations > 10:
+            return "HIGH"
+        elif medium_violations > 0:
+            return "MEDIUM"
+        else:
+            return "LOW"
+    
+    def _generate_compliance_recommendations(self, repository_scan: Dict[str, Any]) -> List[Dict[str, str]]:
+        """Generate compliance recommendations based on scan results"""
+        recommendations = []
+        
+        try:
+            scan_summary = repository_scan.get("scan_summary", {})
+            severity_breakdown = scan_summary.get("severity_breakdown", {})
+            category_breakdown = scan_summary.get("category_breakdown", {})
+            
+            # High severity violations
+            if severity_breakdown.get("HIGH", 0) > 0:
+                recommendations.append({
+                    "priority": "CRITICAL",
+                    "category": "security",
+                    "recommendation": f"Address {severity_breakdown['HIGH']} high-severity violations immediately",
+                    "action": "Review and fix high-risk security and compliance issues"
+                })
+            
+            # Category-specific recommendations
+            for category, count in category_breakdown.items():
+                if count > 5:
+                    recommendations.append({
+                        "priority": "HIGH",
+                        "category": category,
+                        "recommendation": f"Implement comprehensive {category} compliance measures",
+                        "action": f"Review {count} violations in {category} category"
+                    })
+            
+            # General recommendations
+            compliance_score = repository_scan.get("compliance_score", 0.0)
+            if compliance_score < 0.7:
+                recommendations.append({
+                    "priority": "MEDIUM",
+                    "category": "general",
+                    "recommendation": "Improve overall compliance posture",
+                    "action": f"Current compliance score: {compliance_score:.1%}. Aim for >80%"
+                })
+            
+            return recommendations
+            
+        except Exception as e:
+            logger.error(f"Recommendation generation failed: {e}")
+            return [{"priority": "LOW", "category": "error", "recommendation": f"Error generating recommendations: {str(e)}"}]

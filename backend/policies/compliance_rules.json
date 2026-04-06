@@ -1,7 +1,8 @@
 {
   "policy_security_policy_470_rule_1": {
     "rule_id": "rule_1",
-    "description": "## Security Controls:\n\n### Authentication & Authorization\n- All users must authenticate using strong passwords\n- Multi-factor authentication is required for admin access\n- User access must be reviewed quarterly\n\n### Data Security\n- Sensitive data must be encrypted using AES-256\n- Database connections must use TLS\n- API endpoints must implement proper authentication\n\n### Monitoring & Logging\n- Security events must be logged centrally\n- Log retention period is minimum 1 year\n- Automated monitoring must detect anomalies\n\n### Incident Response\n- Security incidents must be reported immediately\n- Incident response plan must be activated within 1 hour\n- Post-incident review is mandatory\n\n## Enforcement\nViolations will result in immediate review and potential termination",
+    "description": "Security Controls: Authentication & Authorization - All users must authenticate using strong passwords - Multi-factor authentication is required ...",
+    "full_requirement": "## Security Controls:\n\n### Authentication & Authorization\n- All users must authenticate using strong passwords\n- Multi-factor authentication is required for admin access\n- User access must be reviewed quarterly\n\n### Data Security\n- Sensitive data must be encrypted using AES-256\n- Database connections must use TLS\n- API endpoints must implement proper authentication\n\n### Monitoring & Logging\n- Security events must be logged centrally\n- Log retention period is minimum 1 year\n- Automated monitoring must detect anomalies\n\n### Incident Response\n- Security incidents must be reported immediately\n- Incident response plan must be activated within 1 hour\n- Post-incident review is mandatory\n\n## Enforcement\nViolations will result in immediate review and potential termination",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -44,7 +45,8 @@
   },
   "policy_privacy_policy_1938_rule_1": {
     "rule_id": "rule_1",
-    "description": "Data Collection:\n- We collect only necessary personal data\n- Consent must be obtained before data collection\n- Users have the right to data portability\n\nData Processing:\n- Personal data processing must have legal basis\n- Data minimization principles must be applied\n- Automated decision-making requires human oversight\n\nUser Rights:\n- Right to access personal data\n- Right to rectification of incorrect data\n- Right to erasure (right to be forgotten)\n- Right to data portability\n\nTechnical Measures:\n- Implement privacy by design\n- Conduct privacy impact assessments\n- Regular privacy audits required",
+    "description": "Data Collection: - We collect only necessary personal data - Consent must be obtained before data collection - Users have the right to data portabi...",
+    "full_requirement": "Data Collection:\n- We collect only necessary personal data\n- Consent must be obtained before data collection\n- Users have the right to data portability\n\nData Processing:\n- Personal data processing must have legal basis\n- Data minimization principles must be applied\n- Automated decision-making requires human oversight\n\nUser Rights:\n- Right to access personal data\n- Right to rectification of incorrect data\n- Right to erasure (right to be forgotten)\n- Right to data portability\n\nTechnical Measures:\n- Implement privacy by design\n- Conduct privacy impact assessments\n- Regular privacy audits required",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -75,7 +77,8 @@
   },
   "policy_data_protection_policy_1704_rule_1": {
     "rule_id": "rule_1",
-    "description": "**Personal Data Protection**: All personal data must be encrypted both in transit and at rest",
+    "description": "Personal Data Protection: All personal data must be encrypted both in transit and at rest",
+    "full_requirement": "**Personal Data Protection**: All personal data must be encrypted both in transit and at rest",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -106,7 +109,8 @@
   },
   "policy_data_protection_policy_1704_rule_2": {
     "rule_id": "rule_2",
-    "description": "**Access Controls**: Only authorized personnel shall have access to personal data",
+    "description": "Access Controls: Only authorized personnel shall have access to personal data",
+    "full_requirement": "**Access Controls**: Only authorized personnel shall have access to personal data",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -137,7 +141,8 @@
   },
   "policy_data_protection_policy_1704_rule_3": {
     "rule_id": "rule_3",
-    "description": "**Data Retention**: Personal data must not be retained longer than necessary",
+    "description": "Data Retention: Personal data must not be retained longer than necessary",
+    "full_requirement": "**Data Retention**: Personal data must not be retained longer than necessary",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -164,7 +169,8 @@
   },
   "policy_data_protection_policy_1704_rule_4": {
     "rule_id": "rule_4",
-    "description": "**Audit Logging**: All access to personal data must be logged and audited",
+    "description": "Audit Logging: All access to personal data must be logged and audited",
+    "full_requirement": "**Audit Logging**: All access to personal data must be logged and audited",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -199,7 +205,8 @@
   },
   "policy_data_protection_policy_1704_rule_5": {
     "rule_id": "rule_5",
-    "description": "**Breach Notification**: Data breaches must be reported within 72 hours",
+    "description": "Breach Notification: Data breaches must be reported within 72 hours",
+    "full_requirement": "**Breach Notification**: Data breaches must be reported within 72 hours",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -226,7 +233,8 @@
   },
   "policy_data_protection_policy_1704_rule_6": {
     "rule_id": "rule_6",
-    "description": "### Security Requirements:\n\n- Passwords must be stored using secure hashing algorithms\n- Authentication must use multi-factor authentication where possible\n- All data transmissions must use TLS encryption\n- Regular security audits are mandatory\n\n### Compliance Obligations:\n\nThis policy ensures compliance with:\n- GDPR (General Data Protection Regulation)\n- CCPA (California Consumer Privacy Act)\n- ISO 27001 Standards\n\n### Penalties:\n\nViolation of this policy may result in:\n- Employee disciplinary action\n- Financial penalties up to €20 million or 4% of annual revenue\n- Legal sanctions as per applicable law",
+    "description": "Security Requirements: - Passwords must be stored using secure hashing algorithms - Authentication must use multi-factor authentication where poss...",
+    "full_requirement": "### Security Requirements:\n\n- Passwords must be stored using secure hashing algorithms\n- Authentication must use multi-factor authentication where possible\n- All data transmissions must use TLS encryption\n- Regular security audits are mandatory\n\n### Compliance Obligations:\n\nThis policy ensures compliance with:\n- GDPR (General Data Protection Regulation)\n- CCPA (California Consumer Privacy Act)\n- ISO 27001 Standards\n\n### Penalties:\n\nViolation of this policy may result in:\n- Employee disciplinary action\n- Financial penalties up to €20 million or 4% of annual revenue\n- Legal sanctions as per applicable law",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -261,7 +269,8 @@
   },
   "policy_security_policy_5812_rule_1": {
     "rule_id": "rule_1",
-    "description": "## Security Controls:\n\n### Authentication & Authorization\n- All users must authenticate using strong passwords\n- Multi-factor authentication is required for admin access\n- User access must be reviewed quarterly\n\n### Data Security\n- Sensitive data must be encrypted using AES-256\n- Database connections must use TLS\n- API endpoints must implement proper authentication\n\n### Monitoring & Logging\n- Security events must be logged centrally\n- Log retention period is minimum 1 year\n- Automated monitoring must detect anomalies\n\n### Incident Response\n- Security incidents must be reported immediately\n- Incident response plan must be activated within 1 hour\n- Post-incident review is mandatory\n\n## Enforcement\nViolations will result in immediate review and potential termination",
+    "description": "Security Controls: Authentication & Authorization - All users must authenticate using strong passwords - Multi-factor authentication is required ...",
+    "full_requirement": "## Security Controls:\n\n### Authentication & Authorization\n- All users must authenticate using strong passwords\n- Multi-factor authentication is required for admin access\n- User access must be reviewed quarterly\n\n### Data Security\n- Sensitive data must be encrypted using AES-256\n- Database connections must use TLS\n- API endpoints must implement proper authentication\n\n### Monitoring & Logging\n- Security events must be logged centrally\n- Log retention period is minimum 1 year\n- Automated monitoring must detect anomalies\n\n### Incident Response\n- Security incidents must be reported immediately\n- Incident response plan must be activated within 1 hour\n- Post-incident review is mandatory\n\n## Enforcement\nViolations will result in immediate review and potential termination",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -304,7 +313,8 @@
   },
   "policy_privacy_policy_6009_rule_1": {
     "rule_id": "rule_1",
-    "description": "Data Collection:\n- We collect only necessary personal data\n- Consent must be obtained before data collection\n- Users have the right to data portability\n\nData Processing:\n- Personal data processing must have legal basis\n- Data minimization principles must be applied\n- Automated decision-making requires human oversight\n\nUser Rights:\n- Right to access personal data\n- Right to rectification of incorrect data\n- Right to erasure (right to be forgotten)\n- Right to data portability\n\nTechnical Measures:\n- Implement privacy by design\n- Conduct privacy impact assessments\n- Regular privacy audits required",
+    "description": "Data Collection: - We collect only necessary personal data - Consent must be obtained before data collection - Users have the right to data portabi...",
+    "full_requirement": "Data Collection:\n- We collect only necessary personal data\n- Consent must be obtained before data collection\n- Users have the right to data portability\n\nData Processing:\n- Personal data processing must have legal basis\n- Data minimization principles must be applied\n- Automated decision-making requires human oversight\n\nUser Rights:\n- Right to access personal data\n- Right to rectification of incorrect data\n- Right to erasure (right to be forgotten)\n- Right to data portability\n\nTechnical Measures:\n- Implement privacy by design\n- Conduct privacy impact assessments\n- Regular privacy audits required",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -335,7 +345,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_1": {
     "rule_id": "rule_1",
-    "description": "—Draft of rules proposed to be made by the Central Government in \nexercise of the powers conferred by sub -sections (1) and (2) of section 40 of the Digital \nPersonal Data Protection Act, 2023 (22 of 2023), on or after the date of coming into force \nof the Act , are hereby published for the information of all persons likely to be affected \nthereby; and notice is hereby given that the said draft rules shall be taken into consideration \nafter 18th February, 2025 ;  \nObjections and suggestions, if any, may be submitted on the website of MyGov \n(https://mygov",
+    "description": "—Draft of rules proposed to be made by the Central Government in exercise of the powers conferred by sub -sections (1) and (2) of section 40 of th...",
+    "full_requirement": "—Draft of rules proposed to be made by the Central Government in \nexercise of the powers conferred by sub -sections (1) and (2) of section 40 of the Digital \nPersonal Data Protection Act, 2023 (22 of 2023), on or after the date of coming into force \nof the Act , are hereby published for the information of all persons likely to be affected \nthereby; and notice is hereby given that the said draft rules shall be taken into consideration \nafter 18th February, 2025 ;  \nObjections and suggestions, if any, may be submitted on the website of MyGov \n(https://mygov",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [
@@ -362,7 +373,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_2": {
     "rule_id": "rule_2",
-    "description": "in ) by the said date;  \nThe objections and suggestions, which may be received from any person with \nrespect to the said draft rules before the expiry of the period specified abo ve, shall not be \nattributed to the persons submitting publicly and shall be held in fiduciary capacity to enable \nthem to provide the same freely, and shall be considered by the Central Government",
+    "description": "in ) by the said date; The objections and suggestions, which may be received from any person with respect to the said draft rules before the exp...",
+    "full_requirement": "in ) by the said date;  \nThe objections and suggestions, which may be received from any person with \nrespect to the said draft rules before the expiry of the period specified abo ve, shall not be \nattributed to the persons submitting publicly and shall be held in fiduciary capacity to enable \nthem to provide the same freely, and shall be considered by the Central Government",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -384,7 +396,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_3": {
     "rule_id": "rule_3",
-    "description": "(2) Rules 3 to 15, rule 21 and rule 22 shall come into force with effect from  __________",
+    "description": "(2) Rules 3 to 15, rule 21 and rule 22 shall come into force with effect from __________",
+    "full_requirement": "(2) Rules 3 to 15, rule 21 and rule 22 shall come into force with effect from  __________",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -406,7 +419,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_4": {
     "rule_id": "rule_4",
-    "description": "(3) These rules , except rules 3 to 15 and rules 21 and 22, shall come into force on the date \nof their publication in the Official Gazette",
+    "description": "(3) These rules , except rules 3 to 15 and rules 21 and 22, shall come into force on the date of their publication in the Official Gazette",
+    "full_requirement": "(3) These rules , except rules 3 to 15 and rules 21 and 22, shall come into force on the date \nof their publication in the Official Gazette",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -428,7 +442,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_5": {
     "rule_id": "rule_5",
-    "description": "—Unless the context otherwise requires, all expressions shall have the \nmeaning  assigned to them in the Digital Personal Data Protection Act, 2023 (22 of 2023) \n(hereinafter referred to as “Act”)",
+    "description": "—Unless the context otherwise requires, all expressions shall have the meaning assigned to them in the Digital Personal Data Protection Act, 2023...",
+    "full_requirement": "—Unless the context otherwise requires, all expressions shall have the \nmeaning  assigned to them in the Digital Personal Data Protection Act, 2023 (22 of 2023) \n(hereinafter referred to as “Act”)",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [
@@ -455,7 +470,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_6": {
     "rule_id": "rule_6",
-    "description": "—The notice given by the Data \nFiduciary to the Data Principal shall — \n(a) be presented and be understandable independently of any other information that \nhas been, is or may be made available by such Data Fiduciary;   \n(b) give, in clear and plain language, a fair account of the details necessary to enable \nthe Data Principal to give specific and informed consent for the  processing of her \npersonal data, which shall include, at the minimum, — \n(i) an itemised description of such personal data;  and \n(ii) the specified purpose of, and an itemised description of the goods or services \nto be provided or uses to be enabled by, such processing;  and \n(c)  the particular communication link for accessing the website or app, or both, of such \nData Fiduciary , and a description of other means, if any, using which  such Data \nPrincipal may — \n(i) withdraw her consent , with the ease  of doing so being comparable to that \nwith which such consent was given ; \n(ii) exercise her rights  under the Act ; and \n[भाग II—खण् ड 3(i)] भारत का रािपत्र : असाधारण   29 \n \n(iii) make a complaint to the Board",
+    "description": "—The notice given by the Data Fiduciary to the Data Principal shall — (a) be presented and be understandable independently of any other informati...",
+    "full_requirement": "—The notice given by the Data \nFiduciary to the Data Principal shall — \n(a) be presented and be understandable independently of any other information that \nhas been, is or may be made available by such Data Fiduciary;   \n(b) give, in clear and plain language, a fair account of the details necessary to enable \nthe Data Principal to give specific and informed consent for the  processing of her \npersonal data, which shall include, at the minimum, — \n(i) an itemised description of such personal data;  and \n(ii) the specified purpose of, and an itemised description of the goods or services \nto be provided or uses to be enabled by, such processing;  and \n(c)  the particular communication link for accessing the website or app, or both, of such \nData Fiduciary , and a description of other means, if any, using which  such Data \nPrincipal may — \n(i) withdraw her consent , with the ease  of doing so being comparable to that \nwith which such consent was given ; \n(ii) exercise her rights  under the Act ; and \n[भाग II—खण् ड 3(i)] भारत का रािपत्र : असाधारण   29 \n \n(iii) make a complaint to the Board",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [
@@ -486,7 +502,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_7": {
     "rule_id": "rule_7",
-    "description": "Registration  and obligations of Consent Manager",
+    "description": "Registration and obligations of Consent Manager",
+    "full_requirement": "Registration  and obligations of Consent Manager",
     "category": "compliance",
     "severity": "LOW",
     "scan_patterns": [],
@@ -509,6 +526,7 @@
   "policy_dpdpa_draft_rules_english__979_rule_8": {
     "rule_id": "rule_8",
     "description": "(3) The Consent Manager shall have obligations as specified in Part B of First Schedule",
+    "full_requirement": "(3) The Consent Manager shall have obligations as specified in Part B of First Schedule",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -530,7 +548,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_9": {
     "rule_id": "rule_9",
-    "description": "(4) If the Board is of the opinion that a Consent Manager is not adhering to the conditions \nand obligations under  this rule,  it may , after giving an opportunity of being heard, inform \nthe Consent Manager of such non -adherence and direct the Consent Manager to take \nmeasures to ensure adherence",
+    "description": "(4) If the Board is of the opinion that a Consent Manager is not adhering to the conditions and obligations under this rule, it may , after givi...",
+    "full_requirement": "(4) If the Board is of the opinion that a Consent Manager is not adhering to the conditions \nand obligations under  this rule,  it may , after giving an opportunity of being heard, inform \nthe Consent Manager of such non -adherence and direct the Consent Manager to take \nmeasures to ensure adherence",
     "category": "compliance",
     "severity": "LOW",
     "scan_patterns": [],
@@ -552,7 +571,8 @@
   },
   "policy_dpdpa_draft_rules_english__979_rule_10": {
     "rule_id": "rule_10",
-    "description": "(2) Processing under this rule shall be done following the standards specified in  Second \nSchedule",
+    "description": "(2) Processing under this rule shall be done following the standards specified in Second Schedule",
+    "full_requirement": "(2) Processing under this rule shall be done following the standards specified in  Second \nSchedule",
     "category": "compliance",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -574,7 +594,8 @@
   },
   "policy_data_protection_policy_6009_rule_1": {
     "rule_id": "rule_1",
-    "description": "**Personal Data Protection**: All personal data must be encrypted both in transit and at rest",
+    "description": "Personal Data Protection: All personal data must be encrypted both in transit and at rest",
+    "full_requirement": "**Personal Data Protection**: All personal data must be encrypted both in transit and at rest",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -605,7 +626,8 @@
   },
   "policy_data_protection_policy_6009_rule_2": {
     "rule_id": "rule_2",
-    "description": "**Access Controls**: Only authorized personnel shall have access to personal data",
+    "description": "Access Controls: Only authorized personnel shall have access to personal data",
+    "full_requirement": "**Access Controls**: Only authorized personnel shall have access to personal data",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -636,7 +658,8 @@
   },
   "policy_data_protection_policy_6009_rule_3": {
     "rule_id": "rule_3",
-    "description": "**Data Retention**: Personal data must not be retained longer than necessary",
+    "description": "Data Retention: Personal data must not be retained longer than necessary",
+    "full_requirement": "**Data Retention**: Personal data must not be retained longer than necessary",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -663,7 +686,8 @@
   },
   "policy_data_protection_policy_6009_rule_4": {
     "rule_id": "rule_4",
-    "description": "**Audit Logging**: All access to personal data must be logged and audited",
+    "description": "Audit Logging: All access to personal data must be logged and audited",
+    "full_requirement": "**Audit Logging**: All access to personal data must be logged and audited",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -698,7 +722,8 @@
   },
   "policy_data_protection_policy_6009_rule_5": {
     "rule_id": "rule_5",
-    "description": "**Breach Notification**: Data breaches must be reported within 72 hours",
+    "description": "Breach Notification: Data breaches must be reported within 72 hours",
+    "full_requirement": "**Breach Notification**: Data breaches must be reported within 72 hours",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -725,7 +750,8 @@
   },
   "policy_data_protection_policy_6009_rule_6": {
     "rule_id": "rule_6",
-    "description": "### Security Requirements:\n\n- Passwords must be stored using secure hashing algorithms\n- Authentication must use multi-factor authentication where possible\n- All data transmissions must use TLS encryption\n- Regular security audits are mandatory\n\n### Compliance Obligations:\n\nThis policy ensures compliance with:\n- GDPR (General Data Protection Regulation)\n- CCPA (California Consumer Privacy Act)\n- ISO 27001 Standards\n\n### Penalties:\n\nViolation of this policy may result in:\n- Employee disciplinary action\n- Financial penalties up to €20 million or 4% of annual revenue\n- Legal sanctions as per applicable law",
+    "description": "Security Requirements: - Passwords must be stored using secure hashing algorithms - Authentication must use multi-factor authentication where poss...",
+    "full_requirement": "### Security Requirements:\n\n- Passwords must be stored using secure hashing algorithms\n- Authentication must use multi-factor authentication where possible\n- All data transmissions must use TLS encryption\n- Regular security audits are mandatory\n\n### Compliance Obligations:\n\nThis policy ensures compliance with:\n- GDPR (General Data Protection Regulation)\n- CCPA (California Consumer Privacy Act)\n- ISO 27001 Standards\n\n### Penalties:\n\nViolation of this policy may result in:\n- Employee disciplinary action\n- Financial penalties up to €20 million or 4% of annual revenue\n- Legal sanctions as per applicable law",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -761,6 +787,7 @@
   "policy_dpdpa_draft_rules_english__3307_rule_1": {
     "rule_id": "rule_1",
     "description": "pdf (content extraction not implemented)",
+    "full_requirement": "pdf (content extraction not implemented)",
     "category": "general",
     "severity": "LOW",
     "scan_patterns": [],
@@ -782,7 +809,8 @@
   },
   "policy_security_policy_7145_rule_1": {
     "rule_id": "rule_1",
-    "description": "PASSWORD REQUIREMENTS\n- Passwords must be at least 12 characters long\n- Must contain uppercase, lowercase, numbers, and special characters\n- Passwords must not be stored in plain text\n- Multi-factor authentication required for admin access\n\n2",
+    "description": "PASSWORD REQUIREMENTS - Passwords must be at least 12 characters long - Must contain uppercase, lowercase, numbers, and special characters - Passwo...",
+    "full_requirement": "PASSWORD REQUIREMENTS\n- Passwords must be at least 12 characters long\n- Must contain uppercase, lowercase, numbers, and special characters\n- Passwords must not be stored in plain text\n- Multi-factor authentication required for admin access\n\n2",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -813,7 +841,8 @@
   },
   "policy_security_policy_7145_rule_2": {
     "rule_id": "rule_2",
-    "description": "DATA ENCRYPTION\n- All sensitive data must be encrypted using AES-256\n- Database connections must use TLS 1",
+    "description": "DATA ENCRYPTION - All sensitive data must be encrypted using AES-256 - Database connections must use TLS 1",
+    "full_requirement": "DATA ENCRYPTION\n- All sensitive data must be encrypted using AES-256\n- Database connections must use TLS 1",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -844,7 +873,8 @@
   },
   "policy_security_policy_7145_rule_3": {
     "rule_id": "rule_3",
-    "description": "2 or higher\n- API communications must use HTTPS only\n- Encryption keys must be rotated every 90 days\n\n3",
+    "description": "2 or higher - API communications must use HTTPS only - Encryption keys must be rotated every 90 days 3",
+    "full_requirement": "2 or higher\n- API communications must use HTTPS only\n- Encryption keys must be rotated every 90 days\n\n3",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -871,7 +901,8 @@
   },
   "policy_security_policy_7145_rule_4": {
     "rule_id": "rule_4",
-    "description": "ACCESS CONTROL\n- Principle of least privilege must be enforced\n- User access must be reviewed quarterly\n- Shared accounts are prohibited\n- Session timeouts must be implemented\n\n4",
+    "description": "ACCESS CONTROL - Principle of least privilege must be enforced - User access must be reviewed quarterly - Shared accounts are prohibited - Session ...",
+    "full_requirement": "ACCESS CONTROL\n- Principle of least privilege must be enforced\n- User access must be reviewed quarterly\n- Shared accounts are prohibited\n- Session timeouts must be implemented\n\n4",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -898,7 +929,8 @@
   },
   "policy_security_policy_7145_rule_5": {
     "rule_id": "rule_5",
-    "description": "LOGGING AND MONITORING\n- All access to sensitive data must be logged\n- Security logs must be retained for 2 years\n- Real-time monitoring for suspicious activities\n- Automated alerts for security incidents\n\n5",
+    "description": "LOGGING AND MONITORING - All access to sensitive data must be logged - Security logs must be retained for 2 years - Real-time monitoring for suspic...",
+    "full_requirement": "LOGGING AND MONITORING\n- All access to sensitive data must be logged\n- Security logs must be retained for 2 years\n- Real-time monitoring for suspicious activities\n- Automated alerts for security incidents\n\n5",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [
@@ -933,7 +965,8 @@
   },
   "policy_security_policy_7145_rule_6": {
     "rule_id": "rule_6",
-    "description": "VULNERABILITY MANAGEMENT\n- Regular security assessments required\n- Critical vulnerabilities must be patched within 48 hours\n- Penetration testing annually\n- Code security reviews for all releases",
+    "description": "VULNERABILITY MANAGEMENT - Regular security assessments required - Critical vulnerabilities must be patched within 48 hours - Penetration testing a...",
+    "full_requirement": "VULNERABILITY MANAGEMENT\n- Regular security assessments required\n- Critical vulnerabilities must be patched within 48 hours\n- Penetration testing annually\n- Code security reviews for all releases",
     "category": "security",
     "severity": "HIGH",
     "scan_patterns": [],
@@ -955,7 +988,8 @@
   },
   "policy_gdpr_policy_770_rule_1": {
     "rule_id": "rule_1",
-    "description": "# GDPR Compliance Policy\n\n## Data Protection Requirements\n\n### Article 25: Data Protection by Design\n- Personal data processing must implement appropriate technical and organizational measures\n- Data protection must be integrated into processing activities from the outset\n- Privacy settings must be set to the most protective by default\n\n### Article 32: Security of Processing\n- Implement appropriate technical and organizational measures to ensure data security\n- Use encryption of personal data where appropriate\n- Ensure ongoing confidentiality, integrity, availability and resilience of systems\n- Regular testing and evaluation of security measures is required\n\n### Article 33: Breach Notification\n- Data breaches must be reported to supervisory authority within 72 hours\n- High-risk breaches must be communicated to data subjects without undue delay\n- Maintain records of all personal data breaches\n\n### Data Subject Rights (Articles 15-22)\n- Right of access: Provide copy of personal data upon request\n- Right to rectification: Correct inaccurate personal data\n- Right to erasure: Delete personal data when no longer needed\n- Right to data portability: Provide data in machine-readable format\n\n### Technical Requirements\n- Use strong encryption for data at rest and in transit\n- Implement access controls and authentication\n- Regular security audits and penetration testing\n- Data minimization and purpose limitation\n- Consent management systems required",
+    "description": "GDPR Compliance Policy Data Protection Requirements Article 25: Data Protection by Design - Personal data processing must implement appropriate...",
+    "full_requirement": "# GDPR Compliance Policy\n\n## Data Protection Requirements\n\n### Article 25: Data Protection by Design\n- Personal data processing must implement appropriate technical and organizational measures\n- Data protection must be integrated into processing activities from the outset\n- Privacy settings must be set to the most protective by default\n\n### Article 32: Security of Processing\n- Implement appropriate technical and organizational measures to ensure data security\n- Use encryption of personal data where appropriate\n- Ensure ongoing confidentiality, integrity, availability and resilience of systems\n- Regular testing and evaluation of security measures is required\n\n### Article 33: Breach Notification\n- Data breaches must be reported to supervisory authority within 72 hours\n- High-risk breaches must be communicated to data subjects without undue delay\n- Maintain records of all personal data breaches\n\n### Data Subject Rights (Articles 15-22)\n- Right of access: Provide copy of personal data upon request\n- Right to rectification: Correct inaccurate personal data\n- Right to erasure: Delete personal data when no longer needed\n- Right to data portability: Provide data in machine-readable format\n\n### Technical Requirements\n- Use strong encryption for data at rest and in transit\n- Implement access controls and authentication\n- Regular security audits and penetration testing\n- Data minimization and purpose limitation\n- Consent management systems required",
     "category": "data_protection",
     "severity": "HIGH",
     "scan_patterns": [
@@ -987,5 +1021,28 @@
       ]
     },
     "confidence": 0.7
+  },
+  "policy_dpdpa_draft_rules_english__rule_1": {
+    "rule_id": "rule_1",
+    "description": "rules 3 to 15 and rules 21 and 22",
+    "full_requirement": "rules 3 to 15 and rules 21 and 22",
+    "category": "data_protection",
+    "severity": "LOW",
+    "scan_patterns": [],
+    "compliance_check": {
+      "check_type": "pattern_match",
+      "description": "Check for compliance with: rules 3 to 15 and rules 21 and 22...",
+      "validation_rules": [
+        {
+          "rule": "presence_check",
+          "description": "Verify required elements are present"
+        },
+        {
+          "rule": "pattern_validation",
+          "description": "Validate implementation patterns"
+        }
+      ]
+    },
+    "confidence": 0.13484690085897455
   }
 }

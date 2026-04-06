@@ -1,0 +1,302 @@
+# Pre-built Indian Compliance Rules for Semgrep
+# Generated from indian_compliance_rules.json
+# Covers: DPDPA 2023, RBI Guidelines, IT Act 2000, SEBI, ISO 8000
+# Total: 18+ rules
+
+rules:
+
+# ============ DPDPA 2023 ============
+
+- id: dpdpa.001.consent_before_processing
+  pattern-either:
+    - pattern: |
+        $DB.store($DATA)
+    - pattern: process($DATA)
+    - pattern: $API.send($DATA)
+  pattern-not-inside: |
+    if ($CONSENT) {
+        ...
+    }
+  message: "DPDPA Violation: Personal data stored/processed without consent verification"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: DPDPA
+    section: "Section 7"
+    rule: dpdpa_001
+    fix: "Add consent.validate() before processing personal data"
+    impact: "Penalty: ₹5 crore or 2% annual turnover"
+
+- id: dpdpa.002.purpose_limitation
+  pattern: |
+    $DATA_FOR_PURPOSE_X
+    ...
+    $USE_FOR_PURPOSE_Y
+  pattern-not: |
+    if ($PURPOSE_CHECK) {
+        $USE_FOR_PURPOSE_Y
+    }
+  message: "DPDPA Violation: Data collected for one purpose used for another"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: DPDPA
+    section: "Purpose Limitation"
+    rule: dpdpa_002
+    fix: "Ensure data is used only for consented purposes"
+
+- id: dpdpa.003.data_minimization
+  pattern-either:
+    - pattern: |
+        db.save({
+            $EMAIL,
+            $PHONE,
+            $ADDRESS,
+            $SSN,
+            $DOB,
+            ...
+        })
+    - pattern: $ENTIRE_BODY = req.body
+    - pattern: collect_all_fields($USER)
+  message: "DPDPA Violation: Unnecessary personal data collected (data minimization breach)"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: DPDPA
+    section: "Data Minimization"
+    rule: dpdpa_003
+    fix: "Collect only required fields. Remove: SSN, DOB, address if not needed"
+
+- id: dpdpa.004.breach_notification
+  pattern: |
+    catch($BREACH) {
+        // ... do nothing
+    }
+  pattern-not: |
+    catch($BREACH) {
+        notifyUsers($BREACH)
+        ...
+    }
+  message: "DPDPA Violation: Breach detected but notification not sent within 72 hours"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: DPDPA
+    section: "Section 8 - Breach Notification"
+    rule: dpdpa_004
+    fix: "Implement breach notification within 72 hours"
+
+- id: dpdpa.005.user_rights
+  pattern-not: |
+    app.delete($API_ENDPOINT)
+  message: "DPDPA Violation: No DELETE endpoint for user data deletion (right to erasure missing)"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: DPDPA
+    section: "Sections 16-18 - User Rights"
+    rule: dpdpa_005
+    fix: "Implement DELETE endpoint and handlers for user rights (access, correction, erasure, portability)"
+
+# ============ RBI Guidelines ============
+
+- id: rbi.001.authorization_control
+  pattern: |
+    const role = req.body.role
+  message: "RBI Violation: Authorization from client request body (not secure). Must use server-side JWT"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: RBI
+    guideline: "Information Security Guidelines"
+    rule: rbi_001
+    fix: "Use JWT: const role = extractFromJWT(req.headers.authorization)"
+
+- id: rbi.002.transaction_atomicity
+  pattern: |
+    $BALANCE = getBalance()
+    if ($BALANCE > $AMOUNT) {
+        debit($ACCOUNT, $AMOUNT)
+    }
+  pattern-not: |
+    BEGIN TRANSACTION
+    ...
+    COMMIT
+  message: "RBI Violation: Financial transaction not atomic (check-then-act race condition)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: RBI
+    guideline: "Payment System Security"
+    rule: rbi_002
+    fix: "Use database transactions: BEGIN TRANSACTION ... COMMIT"
+
+- id: rbi.003.encryption_standards
+  pattern-either:
+    - pattern: http://...
+    - pattern: $DATA = plaintext
+    - pattern: unencrypted SQL query
+  pattern-not: |
+    tls12($DATA)
+  message: "RBI Violation: Data transmitted or stored without encryption (TLS 1.2+ or AES-256 required)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: RBI
+    guideline: "Encryption Standards"
+    rule: rbi_003
+    fix: "Use TLS 1.2+ for transit, AES-256 for storage"
+
+- id: rbi.004.audit_trail
+  pattern: |
+    $TRANSACTION = {...}
+  pattern-not: |
+    auditLog.record($TRANSACTION)
+  message: "RBI Violation: Financial transaction not logged to immutable audit trail"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: RBI
+    guideline: "Audit Trail Logging"
+    rule: rbi_004
+    fix: "Log all transactions: timestamp, user_id, action, amount, status, authorization"
+
+- id: rbi.005.rate_limiting
+  pattern: |
+    app.post('/login', handler)
+    app.post('/payment', handler)
+  pattern-not: |
+    rateLimit({ max: 5, window: "15m" })
+  message: "RBI Violation: Rate limiting not implemented on sensitive operations"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: RBI
+    guideline: "Rate Limiting"
+    rule: rbi_005
+    fix: "Implement rate limiting: max 5 attempts per 15 minutes"
+
+# ============ IT Act 2000 & SPDI ============
+
+- id: it_act.001.authentication
+  pattern-not: |
+    app.use(authenticate)
+  message: "IT Act Violation: Security endpoint not protected with authentication"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: IT_ACT
+    section: "SPDI Rules"
+    rule: it_act_001
+    fix: "Add authentication middleware to all sensitive endpoints"
+
+- id: it_act.002.input_validation
+  pattern-either:
+    - pattern: |
+        query = 'SELECT * FROM users WHERE id = ' + req.id
+    - pattern: |
+        command = 'rm -rf ' + userInput
+    - pattern: |
+        eval($USER_INPUT)
+  pattern-not: |
+    validateInput($USER_INPUT)
+  message: "IT Act Violation: Unvalidated user input (SQL injection, command injection, code injection risk)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: IT_ACT
+    section: "Input Validation"
+    rule: it_act_002
+    fix: "Use parameterized queries: SELECT * FROM users WHERE id = ? with parameter binding"
+
+- id: it_act.003.unauthorized_access
+  pattern: |
+    app.get('/user/:id', (...) => {
+        return User.findById(req.params.id)
+    })
+  pattern-not: |
+    if (req.user.id !== req.params.id) {
+        throw UnauthorizedError()
+    }
+  message: "IT Act Violation: Missing authorization check (user can access other users' data)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: IT_ACT
+    section: "Unauthorized Access Prevention"
+    rule: it_act_003
+    fix: "Add check: if (req.user.id !== req.params.id) return 403"
+
+# ============ SEBI ============
+
+- id: sebi.001.fair_trading
+  pattern: |
+    selective_disclosure($INSIDER_INFO, $SPECIAL_USER)
+  pattern-not: |
+    ensureFairTradingPractices($INSIDER_INFO)
+  message: "SEBI Violation: Selective disclosure of market information (insider trading risk)"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: SEBI
+    guideline: "Fair Trading Practices"
+    rule: sebi_001
+    fix: "Ensure all market information disclosed equally to all users"
+
+- id: sebi.002.transparency
+  pattern: |
+    charge = hidden_commission
+  pattern-not: |
+    disclose_all_charges()
+  message: "SEBI Violation: Hidden charges or commissions not disclosed"
+  languages: [javascript, typescript, python]
+  severity: HIGH
+  metadata:
+    framework: SEBI
+    guideline: "Transparency Requirements"
+    rule: sebi_002
+    fix: "Disclose all charges, fees, and commissions transparently before transaction"
+
+# ============ ISO 8000 ============
+
+- id: iso8000.001.data_quality
+  pattern: |
+    db.store($DATA)
+  pattern-not: |
+    verifyDataQuality($DATA)
+  message: "ISO 8000 Violation: Data stored without quality verification"
+  languages: [javascript, typescript, python]
+  severity: MEDIUM
+  metadata:
+    framework: ISO_8000
+    standard: "Data Quality Management"
+    rule: iso8000_001
+    fix: "Verify data accuracy, completeness, and consistency before storage"
+
+# ============ General Security (Bonus) ============
+
+- id: general.hardcoded_secrets
+  pattern: |
+    api_key = 'sk_live_...'
+  pattern-not: |
+    process.env.API_KEY
+  message: "Security Violation: Hardcoded credentials (exposed in version control)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: GENERAL_SECURITY
+    rule: general_001
+    fix: "Use environment variables: api_key = process.env.API_KEY"
+
+- id: general.non_parameterized_sql
+  pattern: |
+    f'SELECT * FROM users WHERE id = {user_id}'
+  pattern-not: |
+    parameterized_query('SELECT * FROM users WHERE id = ?', [user_id])
+  message: "Security Violation: Non-parameterized SQL query (SQL injection vulnerability)"
+  languages: [javascript, typescript, python]
+  severity: CRITICAL
+  metadata:
+    framework: GENERAL_SECURITY
+    rule: general_002
+    fix: "Use parameterized queries with ? placeholders"

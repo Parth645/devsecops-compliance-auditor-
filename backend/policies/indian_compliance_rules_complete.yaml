@@ -1,0 +1,629 @@
+rules:
+# ============================================================================
+# CRITICAL SECURITY VIOLATIONS (15 rules)
+# ============================================================================
+
+# 1. Hardcoded Secrets
+- id: hardcoded-api-key
+  pattern-either:
+    - pattern: |
+        $KEY = "sk_..."
+    - pattern: |
+        $KEY = 'sk_...'
+    - pattern: |
+        api_key = "$VALUE"
+    - pattern: |
+        API_KEY = "$VALUE"
+    - pattern: |
+        apiKey = "$VALUE"
+  message: "Hardcoded API key detected - use environment variables"
+  languages: [javascript, typescript, python, java]
+  severity: ERROR
+  metadata:
+    framework: GENERAL_SECURITY
+    cwe: "CWE-798"
+    fix: "Use environment variables: const apiKey = process.env.API_KEY"
+
+- id: hardcoded-password
+  pattern-either:
+    - pattern: |
+        password = "$VALUE"
+    - pattern: |
+        PASSWORD = "$VALUE"
+    - pattern: |
+        pwd = "$VALUE"
+    - pattern: |
+        passwd = "$VALUE"
+  message: "Hardcoded password detected"
+  languages: [javascript, typescript, python, java]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Use environment variables or secure vault"
+
+- id: hardcoded-database-credentials
+  pattern-either:
+    - pattern: |
+        $DB_URL = "postgresql://$USER:$PASS@..."
+    - pattern: |
+        $DB_URL = "mysql://$USER:$PASS@..."
+    - pattern: |
+        $DB_URL = "mongodb://$USER:$PASS@..."
+  message: "Hardcoded database credentials in connection string"
+  languages: [javascript, typescript, python, java]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Use environment variables for database credentials"
+
+# 2. SQL Injection
+- id: sql-injection-string-concat
+  pattern-either:
+    - pattern: |
+        $QUERY = "SELECT * FROM $TABLE WHERE $COL = " + $VAR
+    - pattern: |
+        $QUERY = 'SELECT * FROM $TABLE WHERE $COL = ' + $VAR
+    - pattern: |
+        db.query("... WHERE ... = " + $VAR)
+    - pattern: |
+        connection.execute("... WHERE ... = " + $VAR)
+  message: "SQL injection vulnerability - use parameterized queries"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-89"
+    fix: "Use parameterized queries: db.query('SELECT * FROM users WHERE id = ?', [userId])"
+
+- id: sql-injection-python-fstring
+  pattern: |
+    f"SELECT * FROM $TABLE WHERE $COL = {$VAR}"
+  message: "SQL injection via f-string - use parameterized queries"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-89"
+    fix: "Use parameterized queries: cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))"
+
+- id: sql-injection-format
+  pattern-either:
+    - pattern: |
+        "SELECT * FROM $TABLE WHERE $COL = {}".format($VAR)
+    - pattern: |
+        "SELECT * FROM $TABLE WHERE $COL = %s" % $VAR
+  message: "SQL injection via string formatting"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-89"
+
+# 3. Command Injection
+- id: command-injection
+  pattern-either:
+    - pattern: |
+        os.system($CMD + $USER_INPUT)
+    - pattern: |
+        subprocess.call($CMD + $USER_INPUT)
+    - pattern: |
+        exec($USER_INPUT)
+    - pattern: |
+        eval($USER_INPUT)
+  message: "Command injection vulnerability"
+  languages: [python, javascript]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-78"
+    fix: "Use subprocess with list arguments: subprocess.run(['command', arg1, arg2])"
+
+# 4. Weak Cryptography
+- id: weak-hash-md5
+  pattern-either:
+    - pattern: hashlib.md5(...)
+    - pattern: crypto.createHash('md5')
+    - pattern: MessageDigest.getInstance("MD5")
+  message: "MD5 is cryptographically broken - use SHA-256 or better"
+  languages: [python, javascript, java]
+  severity: ERROR
+  metadata:
+    framework: RBI
+    cwe: "CWE-327"
+    fix: "Use SHA-256: hashlib.sha256() or crypto.createHash('sha256')"
+
+- id: weak-hash-sha1
+  pattern-either:
+    - pattern: hashlib.sha1(...)
+    - pattern: crypto.createHash('sha1')
+    - pattern: MessageDigest.getInstance("SHA1")
+  message: "SHA-1 is deprecated - use SHA-256 or better"
+  languages: [python, javascript, java]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    cwe: "CWE-327"
+
+- id: weak-encryption-des
+  pattern-either:
+    - pattern: Crypto.Cipher.DES.new(...)
+    - pattern: Cipher.getInstance("DES")
+  message: "DES encryption is broken - use AES-256"
+  languages: [python, java]
+  severity: ERROR
+  metadata:
+    framework: RBI
+    fix: "Use AES-256: Crypto.Cipher.AES.new(key, AES.MODE_GCM)"
+
+# 5. Missing Input Validation
+- id: no-input-validation-body
+  pattern: |
+    $VAR = req.body.$FIELD
+  message: "User input from request body not validated"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Add validation: const userId = validateUserId(req.body.id)"
+
+- id: no-input-validation-query
+  pattern: |
+    $VAR = req.query.$FIELD
+  message: "User input from query parameters not validated"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+
+- id: no-input-validation-python
+  pattern-either:
+    - pattern: |
+        $VAR = request.args.get(...)
+    - pattern: |
+        $VAR = request.form.get(...)
+  message: "User input not validated"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+
+# ============================================================================
+# DPDPA 2023 COMPLIANCE (7 rules)
+# ============================================================================
+
+- id: dpdpa-data-collection-no-consent
+  pattern: |
+    database.store({..., email: $EMAIL, ...})
+  message: "DPDPA: Personal data stored without consent check"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    section: "Section 7"
+    fix: "Add consent check: if (user.hasConsent('email')) { database.store(...) }"
+
+- id: dpdpa-pii-in-logs
+  pattern-either:
+    - pattern: console.log(..., $OBJ.email, ...)
+    - pattern: console.log(..., $OBJ.password, ...)
+    - pattern: console.log(..., $OBJ.phone, ...)
+    - pattern: console.log(..., $OBJ.ssn, ...)
+    - pattern: console.log(..., $OBJ.aadhaar, ...)
+    - pattern: logger.info(..., $OBJ.email, ...)
+    - pattern: logger.info(..., $OBJ.password, ...)
+    - pattern: logger.error(..., $OBJ.email, ...)
+    - pattern: logger.error(..., $OBJ.password, ...)
+    - pattern: print(..., $OBJ.email, ...)
+    - pattern: print(..., $OBJ.password, ...)
+    - pattern: logging.info(..., $OBJ.email, ...)
+    - pattern: logging.error(..., $OBJ.password, ...)
+  message: "DPDPA: Logging PII (email/password/phone) to console/logs"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    section: "Section 8"
+    fix: "Remove PII from logs: console.log('User logged in', {userId: user.id}) // Don't log user.email"
+
+# ============================================================================
+# RBI GUIDELINES (4 rules)
+# ============================================================================
+
+- id: rbi-http-not-https
+  pattern-either:
+    - pattern: |
+        $URL = "http://..."
+    - pattern: |
+        fetch("http://...")
+    - pattern: |
+        requests.get("http://...")
+    - pattern: |
+        axios.get("http://...")
+  message: "RBI: Unencrypted HTTP connection - use HTTPS"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Use HTTPS: fetch('https://...')"
+
+- id: rbi-weak-password-policy
+  pattern-either:
+    - pattern: |
+        password: { ..., minLength: $N, ... }
+    - pattern: |
+        password: { ..., min_length: $N, ... }
+    - pattern: |
+        passwordMinLength: $N
+    - pattern: |
+        password_min_length: $N
+    - pattern: |
+        PASSWORD_MIN_LENGTH = $N
+  metavariable-comparison:
+    metavariable: $N
+    comparison: $N < 8
+  message: "RBI: Password minimum length < 8 violates security standards"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Set password minLength to at least 8 characters"
+
+# ============================================================================
+# IT ACT 2000 & SPDI (4 rules)
+# ============================================================================
+
+- id: it-act-cors-allow-all
+  pattern: |
+    cors({origin: "*"})
+  message: "IT Act: CORS allows all origins - security risk"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Restrict CORS: cors({origin: 'https://yourdomain.com'})"
+
+# ============================================================================
+# ADDITIONAL SECURITY (4 rules)
+# ============================================================================
+
+- id: insecure-random
+  pattern-either:
+    - pattern: Math.random()
+    - pattern: random.random()
+  message: "Insecure random number generator for security purposes"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: GENERAL_SECURITY
+    fix: "Use crypto.randomBytes() or secrets.token_bytes()"
+
+- id: debug-mode-enabled
+  pattern-either:
+    - pattern: |
+        DEBUG = True
+    - pattern: |
+        app.debug = True
+    - pattern: |
+        debug: true
+  message: "Debug mode enabled in production"
+  languages: [python, javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: GENERAL_SECURITY
+    fix: "Set DEBUG = False in production"
+
+- id: missing-authentication-check-python
+  pattern: |
+    @app.route(...)
+    def $FUNC(...):
+      ...
+  pattern-not-inside: |
+    @login_required
+    def $FUNC(...):
+      ...
+  message: "Missing authentication check on Flask endpoint"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Add authentication: @login_required decorator"
+
+- id: missing-authentication-check-js
+  pattern-either:
+    - pattern: |
+        router.get(..., async ($REQ, $RES) => { ... })
+    - pattern: |
+        router.post(..., async ($REQ, $RES) => { ... })
+    - pattern: |
+        app.get(..., ($REQ, $RES) => { ... })
+    - pattern: |
+        app.post(..., ($REQ, $RES) => { ... })
+  message: "Missing authentication middleware on route"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Add auth middleware: router.post('/api/data', authMiddleware, handler)"
+
+- id: missing-rate-limiting
+  pattern: |
+    @app.route("/api/...", methods=["POST"])
+    def $FUNC(...):
+      ...
+  pattern-not-inside: |
+    @limiter.limit(...)
+    def $FUNC(...):
+      ...
+  message: "API endpoint missing rate limiting"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Add rate limiting: @limiter.limit('100 per hour')"
+
+- id: unsafe-file-upload-python
+  pattern: |
+    $FILE = request.files.get(...)
+    $FILE.save(...)
+  message: "File upload without validation - security risk"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Validate file type and size before saving"
+
+- id: unsafe-file-upload-js
+  pattern: |
+    multer({dest: ...})
+  message: "File upload without validation - security risk"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Add file validation: multer({dest: 'uploads/', fileFilter: validateFile})"
+
+- id: jwt-no-expiration-js
+  pattern: |
+    jwt.sign($PAYLOAD, $SECRET)
+  pattern-not: |
+    jwt.sign($PAYLOAD, $SECRET, {expiresIn: ...})
+  message: "JWT token without expiration time"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: RBI
+    fix: "Add expiration: jwt.sign(payload, secret, {expiresIn: '1h'})"
+
+- id: jwt-no-expiration-python
+  pattern: |
+    jwt.encode($PAYLOAD, $SECRET)
+  message: "JWT token may be missing expiration time"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Add expiration: jwt.encode({**payload, 'exp': datetime.utcnow() + timedelta(hours=1)}, secret)"
+
+- id: sensitive-data-in-url-js
+  pattern-either:
+    - pattern: |
+        fetch(`/api/users?password=${$PASS}`)
+    - pattern: |
+        axios.get(`/api/users?token=${$TOKEN}`)
+    - pattern: |
+        fetch(`$URL?password=${$PASS}`)
+  message: "Sensitive data in URL - use request body instead"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    fix: "Use POST with body: fetch('/api/users', {method: 'POST', body: JSON.stringify({password})})"
+
+- id: sensitive-data-in-url-python
+  pattern: |
+    requests.get(f"$URL?password={$PASS}")
+  message: "Sensitive data in URL - use request body instead"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    fix: "Use POST with body: requests.post('/api/users', json={'password': password})"
+
+- id: missing-csrf-protection
+  pattern: |
+    @app.route(..., methods=["POST"])
+    def $FUNC(...):
+      ...
+  pattern-not-inside: |
+    @csrf.exempt
+    def $FUNC(...):
+      ...
+  message: "POST endpoint may be missing CSRF protection"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Enable CSRF protection in Flask/Django"
+
+- id: insecure-cookie-js
+  pattern: |
+    res.cookie($NAME, $VALUE)
+  pattern-not: |
+    res.cookie($NAME, $VALUE, {httpOnly: true, secure: true})
+  message: "Cookie without httpOnly and secure flags"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Set secure flags: res.cookie(name, value, {httpOnly: true, secure: true, sameSite: 'strict'})"
+
+- id: insecure-cookie-python
+  pattern: |
+    response.set_cookie($NAME, $VALUE)
+  message: "Cookie may be missing security flags"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Set secure flags: response.set_cookie(name, value, httponly=True, secure=True, samesite='Strict')"
+
+- id: missing-error-handling
+  pattern: |
+    async function $FUNC(...) {
+      await $CALL(...)
+    }
+  pattern-not-inside: |
+    try {
+      ...
+    } catch (...) {
+      ...
+    }
+  message: "Async function without error handling"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: GENERAL_SECURITY
+    fix: "Add try-catch: try { await call() } catch (err) { handleError(err) }"
+
+- id: open-redirect-js
+  pattern: |
+    res.redirect(req.query.$PARAM)
+  message: "Open redirect vulnerability - validate redirect URL"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-601"
+    fix: "Validate URL: if (isValidUrl(url)) { res.redirect(url) }"
+
+- id: open-redirect-python
+  pattern: |
+    return redirect(request.args.get(...))
+  message: "Open redirect vulnerability - validate redirect URL"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-601"
+    fix: "Validate URL: if is_safe_url(url): return redirect(url)"
+
+- id: xxe-vulnerability
+  pattern-either:
+    - pattern: |
+        xml.etree.ElementTree.parse(...)
+    - pattern: |
+        xml.dom.minidom.parse(...)
+    - pattern: |
+        lxml.etree.parse(...)
+  message: "XML External Entity (XXE) vulnerability"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-611"
+    fix: "Disable external entities: parser = etree.XMLParser(resolve_entities=False)"
+
+- id: path-traversal-python
+  pattern-either:
+    - pattern: |
+        open($PATH + $USER_INPUT)
+    - pattern: |
+        os.path.join($PATH, $USER_INPUT)
+  message: "Path traversal vulnerability - validate file paths"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-22"
+    fix: "Validate path: if path.startswith(base_dir): open(path)"
+
+- id: path-traversal-js
+  pattern: |
+    fs.readFile($PATH + $USER_INPUT)
+  message: "Path traversal vulnerability - validate file paths"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-22"
+    fix: "Validate path: if (path.startsWith(baseDir)) { readFile(path) }"
+
+- id: missing-content-security-policy
+  pattern: |
+    app.use(helmet())
+  pattern-not: |
+    app.use(helmet({contentSecurityPolicy: ...}))
+  message: "Missing Content Security Policy configuration"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+    fix: "Configure CSP: helmet({contentSecurityPolicy: {directives: {...}}})"
+
+- id: unencrypted-sensitive-data
+  pattern-either:
+    - pattern: |
+        localStorage.setItem("token", $TOKEN)
+    - pattern: |
+        sessionStorage.setItem("password", $PASS)
+  message: "Storing sensitive data in browser storage without encryption"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    fix: "Encrypt before storing or use httpOnly cookies"
+
+- id: missing-input-sanitization
+  pattern-either:
+    - pattern: |
+        $HTML.innerHTML = $USER_INPUT
+    - pattern: |
+        document.write($USER_INPUT)
+    - pattern: |
+        $EL.insertAdjacentHTML("beforeend", $USER_INPUT)
+  message: "XSS vulnerability - sanitize user input before rendering"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-79"
+    fix: "Sanitize input: element.textContent = userInput or use DOMPurify"
+
+- id: missing-audit-logging
+  pattern: |
+    @app.route("/api/admin/...", methods=["POST", "DELETE"])
+    def $FUNC(...):
+      ...
+  pattern-not-inside: |
+    logger.info(...)
+    def $FUNC(...):
+      ...
+  message: "Admin action without audit logging"
+  languages: [python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    fix: "Add audit log: logger.info(f'Admin action: {action} by {user}')"
+
+- id: weak-tls-version-python
+  pattern-either:
+    - pattern: |
+        ssl_version=ssl.PROTOCOL_TLSv1
+    - pattern: |
+        ssl_version=ssl.PROTOCOL_SSLv3
+  message: "Weak TLS version - use TLS 1.2 or higher"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: RBI
+    fix: "Use TLS 1.2+: ssl_version=ssl.PROTOCOL_TLSv1_2"
+
+- id: weak-tls-version-js
+  pattern: |
+    minVersion: 'TLSv1'
+  message: "Weak TLS version - use TLS 1.2 or higher"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: RBI
+    fix: "Use TLS 1.2+: minVersion: 'TLSv1.2'"

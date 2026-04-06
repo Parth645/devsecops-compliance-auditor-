@@ -1,0 +1,139 @@
+rules:
+# ============ Hardcoded Secrets ============
+- id: hardcoded-api-key
+  pattern-either:
+    - pattern: |
+        $KEY = "sk_live_..."
+    - pattern: |
+        $KEY = 'sk_live_...'
+    - pattern: |
+        api_key = "..."
+    - pattern: |
+        API_KEY = "..."
+  message: "Hardcoded API key detected - use environment variables"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: GENERAL_SECURITY
+    cwe: "CWE-798"
+
+- id: hardcoded-password
+  pattern-either:
+    - pattern: |
+        password = "..."
+    - pattern: |
+        PASSWORD = "..."
+    - pattern: |
+        pwd = "..."
+  message: "Hardcoded password detected"
+  languages: [javascript, typescript, python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+
+# ============ SQL Injection ============
+- id: sql-injection-string-concat
+  pattern-either:
+    - pattern: |
+        $QUERY = "SELECT * FROM ... WHERE ... = " + $VAR
+    - pattern: |
+        $QUERY = 'SELECT * FROM ... WHERE ... = ' + $VAR
+    - pattern: |
+        db.query("... WHERE ... = " + $VAR)
+  message: "SQL injection vulnerability - use parameterized queries"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-89"
+
+- id: sql-injection-python-fstring
+  pattern: |
+    f"SELECT * FROM ... WHERE ... = {$VAR}"
+  message: "SQL injection via f-string - use parameterized queries"
+  languages: [python]
+  severity: ERROR
+  metadata:
+    framework: IT_ACT_2000
+    cwe: "CWE-89"
+
+# ============ Weak Cryptography ============
+- id: weak-hash-md5
+  pattern-either:
+    - pattern: hashlib.md5(...)
+    - pattern: crypto.createHash('md5')
+  message: "MD5 is cryptographically broken - use SHA-256 or better"
+  languages: [python, javascript]
+  severity: WARNING
+  metadata:
+    framework: RBI
+    cwe: "CWE-327"
+
+# ============ Missing Input Validation ============
+- id: no-input-validation
+  pattern-either:
+    - pattern: |
+        $VAR = req.body.$FIELD
+    - pattern: |
+        $VAR = req.query.$FIELD
+    - pattern: |
+        $VAR = request.args.get(...)
+  message: "User input not validated - add validation"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+
+# ============ DPDPA - Data Collection ============
+- id: dpdpa-data-collection-no-consent
+  pattern: |
+    database.store({..., email: $EMAIL, ...})
+  message: "DPDPA: Personal data stored without consent check"
+  languages: [javascript, typescript]
+  severity: ERROR
+  metadata:
+    framework: DPDPA_2023
+    section: "Section 7"
+
+# ============ Weak Password Policy ============
+- id: weak-password-length
+  pattern-either:
+    - pattern: |
+        minLength: $N
+    - pattern: |
+        min_length: $N
+  metavariable-comparison:
+    metavariable: $N
+    comparison: $N < 8
+  message: "Password minimum length < 8 violates security standards"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: IT_ACT_2000
+
+# ============ Unencrypted HTTP ============
+- id: http-not-https
+  pattern-either:
+    - pattern: |
+        $URL = "http://..."
+    - pattern: |
+        fetch("http://...")
+    - pattern: |
+        requests.get("http://...")
+  message: "Unencrypted HTTP connection - use HTTPS"
+  languages: [javascript, typescript, python]
+  severity: WARNING
+  metadata:
+    framework: RBI
+
+# ============ Console Logging PII ============
+- id: console-log-pii
+  pattern-either:
+    - pattern: console.log(..., $EMAIL, ...)
+    - pattern: console.log(..., $PASSWORD, ...)
+    - pattern: console.log(..., $PHONE, ...)
+  message: "Logging PII to console violates DPDPA"
+  languages: [javascript, typescript]
+  severity: WARNING
+  metadata:
+    framework: DPDPA_2023

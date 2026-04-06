@@ -1,0 +1,273 @@
+# Semgrep Taint Analysis Configuration for DPDPA Compliance
+# Tracks Personal Identifiable Information (PII) flow from Sources to Sinks
+# Enforces data minimization, consent validation, and secure processing
+
+rules:
+  # ============================================================================
+  # DPDPA RULE 1: Consent Management - Taint Analysis
+  # Detects when personal data reaches storage without consent verification
+  # ============================================================================
+  - id: dpdpa-pii-without-consent
+    patterns:
+      - pattern-either:
+          # Source: Email extraction
+          - pattern: |
+              $EMAIL = $REQ.body.email
+              ...
+              $DB.save($EMAIL)
+          # Source: Phone extraction
+          - pattern: |
+              $PHONE = $REQ.body.phone
+              ...
+              $DB.save($PHONE)
+          # Source: AADHAAR extraction
+          - pattern: |
+              $AADHAAR = $REQ.body.aadhaar
+              ...
+              $DB.save($AADHAAR)
+          # Source: Any user personal data
+          - pattern: |
+              $PII = $REQ.body.$FIELD
+              ...
+              $DB.$METHOD($PII)
+      # Negative pattern: Consent verification is present (Sanitizer)
+      - pattern-not: |
+          $EMAIL = $REQ.body.email
+          ...
+          if ($VERIFY_CONSENT(...)) {
+            ...
+            $DB.save($EMAIL)
+          }
+      - pattern-not: |
+          $PHONE = $REQ.body.phone
+          ...
+          if ($USER.consent) {
+            ...
+            $DB.save($PHONE)
+          }
+    message: "DPDPA VIOLATION: Personal data stored without consent verification. Required: Call verifyConsent() or check user.consent before persisting PII"
+    languages: [javascript, typescript, python]
+    severity: ERROR
+
+  # ============================================================================
+  # DPDPA RULE 2: Data Minimization - Taint Analysis
+  # Flagsunnecessary personal data collection
+  # ============================================================================
+  - id: dpdpa-data-over-collection
+    patterns:
+      - pattern-either:
+          # Capturing entire request body when only specific fields are needed
+          - pattern: |
+              const user = $REQ.body
+              $DB.Users.save(user)
+          # Storing sensitive fields that aren't needed
+          - pattern: |
+              const user = {
+                ...$REQ.body,
+                ...
+              }
+              $DB.save(user)
+          # Wild card object copy from request
+          - pattern: |
+              let userData = Object.assign({}, $REQ.body)
+              $DB.save(userData)
+      # Negative: Only specific whitelisted fields
+      - pattern-not: |
+          const user = {
+            email: $REQ.body.email,
+            name: $REQ.body.name
+          }
+          $DB.save(user)
+    message: "DPDPA VIOLATION: Data minimization breach. Collecting entire request object instead of specific required fields. Extract only: email, name, address (avoid ssn, aadhaar, bank details unless essential)"
+    languages: [javascript, typescript, python]
+    severity: HIGH
+
+  # ============================================================================
+  # DPDPA RULE 3: Purpose Limitation - Taint Analysis
+  # Detects when PII collected for one purpose is used for another
+  # ============================================================================
+  - id: dpdpa-purpose-limitation
+    patterns:
+      - pattern-either:
+          # Email collected for notifications used for marketing
+          - pattern: |
+              // userId collected for 'account_notifications'
+              $EMAIL = $USERS.findById($ID).email
+              ...
+              sendMarketingEmail($EMAIL)
+          # Payment data used for non-payment purposes
+          - pattern: |
+              $PAYMENT_DATA = $REQ.body.paymentInfo
+              ...
+              $ANALYTICS.track($PAYMENT_DATA)
+    message: "DPDPA VIOLATION: Purpose limitation breach. PII used for purpose other than original consent. Document purpose at collection point and enforce in code"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+  # ============================================================================
+  # DPDPA RULE 4: Breach Notification - Taint Analysis
+  # Requires detection mechanism and logging for data access/modification
+  # ============================================================================
+  - id: dpdpa-missing-breach-detection
+    patterns:
+      - pattern-either:
+          # Direct database query on PII without logging
+          - pattern: |
+              const users = $DB.query("SELECT * FROM users WHERE email = $EMAIL")
+          # Bulk PII export without audit trail
+          - pattern: |
+              const data = $DB.export({ format: 'json' })
+      # Negative: Logging is present
+      - pattern-not: |
+          const users = $DB.query("SELECT * FROM users WHERE email = $EMAIL")
+          auditLog("PII_ACCESS", { email: $EMAIL, timestamp: Date.now() })
+    message: "DPDPA VIOLATION: Missing breach detection/logging. Access to personal data must be logged with timestamp. Implement: auditLog('PII_ACCESS', {field, userId, timestamp})"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+  # ============================================================================
+  # DPDPA RULE 5: User Rights - Taint Analysis
+  # Verifies implementation of access, correction, deletion (Sections 16-18)
+  # ============================================================================
+  - id: dpdpa-missing-user-rights
+    patterns:
+      - pattern-either:
+          # No delete endpoint
+          - pattern-not: |
+              app.$METHOD("/api/users/:id", ...]
+          # Delete endpoint exists but doesn't actually delete
+          - pattern: |
+              app.delete("/api/users/:id", async ($REQ, $RES) => {
+                ...
+              })
+          - pattern-not: |
+              app.delete("/api/users/:id", async ($REQ, $RES) => {
+                await $DB.Users.deleteOne({ _id: $ID })
+                ...
+              })
+    message: "DPDPA VIOLATION: Missing User Rights implementation (Section 16-18). Required endpoints: GET /api/users/:id (access), PATCH /api/users/:id (correction), DELETE /api/users/:id (deletion)"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+# ============================================================================
+# RBI GUIDELINES - Taint Analysis Rules
+# ============================================================================
+
+  - id: rbi-authorization-bypass
+    patterns:
+      - pattern-either:
+          # Authorization using client-controlled data
+          - pattern: |
+              if ($REQ.headers.userId === $TARGET_ID) {
+                ...
+              }
+          # Skipping authorization for "internal" calls
+          - pattern: |
+              if ($REQ.headers.internal === "true") {
+                $DB.transferMoney(...)
+              }
+          # User ID from request body used directly
+          - pattern: |
+              const userId = $REQ.body.userId
+              const user = $DB.findById(userId)
+      # Negative: Server validates token/session
+      - pattern-not: |
+          const userId = $SESSION.userId
+          const user = $DB.findById(userId)
+    message: "RBI VIOLATION: Authorization bypass. Never trust client-provided user ID. Use server-side session/token. Enforce: const userId = req.session.userId or req.user.id from JWT"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+  - id: rbi-race-condition-transaction
+    patterns:
+      - pattern-either:
+          # Check-then-act pattern (race condition)
+          - pattern: |
+              const balance = $DB.getBalance($ACCOUNT)
+              if (balance >= $AMOUNT) {
+                $DB.deductBalance($ACCOUNT, $AMOUNT)
+                $DB.creditBalance($OTHER_ACCOUNT, $AMOUNT)
+              }
+    message: "RBI VIOLATION: Race condition in financial transaction. Use atomic transactions or pessimistic locking. Enforce: BEGIN TRANSACTION ... COMMIT or UPDATE ... WHERE balance >= amount"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+  - id: rbi-encryption-missing
+    patterns:
+      - pattern-either:
+          # Customer data stored unencrypted
+          - pattern: |
+              $DB.save({
+                customerId: $ID,
+                accountNumber: $ACCOUNT,
+                ...
+              })
+          # Sending PII over unencrypted connection
+          - pattern: |
+              http.get($URL, { data: customerData })
+          # Passwords stored in plain text
+          - pattern: |
+              user.password = $PASSWORD_INPUT
+              $DB.save(user)
+      # Negative: Encryption is present
+      - pattern-not: |
+          user.password = bcrypt.hashSync($PASSWORD_INPUT, 10)
+          $DB.save(user)
+    message: "RBI VIOLATION: Missing encryption for sensitive data. Required: Use bcrypt/argon2 for passwords, AES-256 for PII, TLS 1.2+ for transport"
+    languages: [javascript, typescript, python]
+    severity: HIGH
+
+  - id: rbi-audit-trail-missing
+    patterns:
+      - pattern-either:
+          # Transaction executed without logging
+          - pattern: |
+              $DB.transferMoney($FROM, $TO, $AMOUNT)
+          # Financial operation without timestamp
+          - pattern: |
+              $DB.updateBalance($ACCOUNT, $NEW_BALANCE)
+      # Negative: Audit logging is present
+      - pattern-not: |
+              $DB.transferMoney($FROM, $TO, $AMOUNT)
+              auditLog("TRANSFER", { from: $FROM, to: $TO, amount: $AMOUNT, timestamp: Date.now() })
+    message: "RBI VIOLATION: Missing audit trail for financial transaction. Required: Log all transactions with timestamp, user ID, before/after state. Retain for 3 years minimum"
+    languages: [javascript, typescript, python]
+    severity: HIGH
+
+# ============================================================================
+# IT ACT 2000 + SPDI RULES - Taint Analysis
+# ============================================================================
+
+  - id: it-act-input-validation
+    patterns:
+      - pattern-either:
+          # SQL injection risk
+          - pattern: |
+              $DB.query("SELECT * FROM users WHERE email = '" + $INPUT + "'")
+          # Command injection
+          - pattern: |
+              exec("process " + $USER_INPUT)
+          # XSS risk
+          - pattern: |
+              $DOM.innerHTML = $USER_INPUT
+    message: "IT ACT VIOLATION: Input validation missing. Risk of injection attack. Sanitize all external input: use parameterized queries, DOMPurify for HTML, validator library"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL
+
+  - id: it-act-unauthorized-access
+    patterns:
+      - pattern-either:
+          # Accessing other user's data
+          - pattern: |
+              app.get("/api/users/:id/data", async ($REQ, $RES) => {
+                const userData = $DB.findById($REQ.params.id)
+                $RES.json(userData)
+              })
+          # No authorization check
+          - pattern-not: |
+              if ($REQ.user.id !== $REQ.params.id) {
+                return $RES.status(403).send("Unauthorized")
+              }
+    message: "IT ACT VIOLATION: Unauthorized data access risk. Always verify req.user.id matches resource owner. Enforce: if (req.user.id !== req.params.userId) throw 403"
+    languages: [javascript, typescript, python]
+    severity: CRITICAL

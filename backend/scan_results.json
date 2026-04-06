@@ -1,0 +1,401 @@
+{
+  "scan_summary": {
+    "total_findings": 17,
+    "verified_violations": 17,
+    "false_positives_filtered": 0,
+    "false_positive_rate_percent": 0.0,
+    "detection_rate_percent": 44.73684210526316,
+    "rules_applied": [
+      "indian_compliance_rules_complete"
+    ]
+  },
+  "violations": [
+    {
+      "id": 1,
+      "rule_id": "policies.weak-hash-md5",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\ai_engine\\output_processor.py",
+      "line_number": 83,
+      "description": "MD5 is cryptographically broken - use SHA-256 or better",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "issue_hash = hashlib.md5(\n                f\"{rule_id}:{description}:{category}\".encode()\n           ",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "const hash = crypto.createHash('sha256').update(data).digest('hex');",
+        "explanation": "Replace MD5 with SHA-256 or better.",
+        "steps": [
+          "Import crypto module",
+          "Replace md5 with sha256",
+          "Update any hash verification logic"
+        ],
+        "priority": "HIGH"
+      }
+    },
+    {
+      "id": 2,
+      "rule_id": "policies.rbi-weak-password-policy",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\ai_engine\\policy_processor.py",
+      "line_number": 89,
+      "description": "RBI: Password minimum length < 8 violates security standards",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "min_length=50",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.rbi-weak-password-policy violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 3,
+      "rule_id": "policies.rbi-weak-password-policy",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\profiles_routes.py",
+      "line_number": 22,
+      "description": "RBI: Password minimum length < 8 violates security standards",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "name: str = Field(..., min_length=1, max_length=100)",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.rbi-weak-password-policy violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 4,
+      "rule_id": "policies.rbi-weak-password-policy",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\profiles_routes.py",
+      "line_number": 44,
+      "description": "RBI: Password minimum length < 8 violates security standards",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "name: Optional[str] = Field(None, min_length=1, max_length=100)",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.rbi-weak-password-policy violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 5,
+      "rule_id": "policies.hardcoded-api-key",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\sample_repo\\app.js",
+      "line_number": 3,
+      "description": "Hardcoded API key detected - use environment variables",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "const API_KEY = 'pk_live_abcd1234';  // ISSUE: Hardcoded API key",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "const apiKey = process.env.API_KEY;",
+        "explanation": "Use environment variables to store sensitive credentials.",
+        "steps": [
+          "Create .env file with API_KEY=your_key",
+          "Install dotenv package",
+          "Load environment variables in your application"
+        ],
+        "priority": "CRITICAL"
+      }
+    },
+    {
+      "id": 6,
+      "rule_id": "policies.hardcoded-api-key",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\sample_repo\\main.py",
+      "line_number": 10,
+      "description": "Hardcoded API key detected - use environment variables",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "API_KEY = \"sk-1234567890abcdef\"",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "const apiKey = process.env.API_KEY;",
+        "explanation": "Use environment variables to store sensitive credentials.",
+        "steps": [
+          "Create .env file with API_KEY=your_key",
+          "Install dotenv package",
+          "Load environment variables in your application"
+        ],
+        "priority": "CRITICAL"
+      }
+    },
+    {
+      "id": 7,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_agentic_pipeline.py",
+      "line_number": 11,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "sys.path.append(os.path.join(os.path.dirname(__file__), 'ai engine'))",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 8,
+      "rule_id": "policies.hardcoded-api-key",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_file.js",
+      "line_number": 4,
+      "description": "Hardcoded API key detected - use environment variables",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "const API_KEY = 'sk_live_1234567890abcdef';",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "const apiKey = process.env.API_KEY;",
+        "explanation": "Use environment variables to store sensitive credentials.",
+        "steps": [
+          "Create .env file with API_KEY=your_key",
+          "Install dotenv package",
+          "Load environment variables in your application"
+        ],
+        "priority": "CRITICAL"
+      }
+    },
+    {
+      "id": 9,
+      "rule_id": "policies.missing-authentication-check-js",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_file.js",
+      "line_number": 7,
+      "description": "Missing authentication middleware on route",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "app.post('/user', (req, res) => {\n    const userId = req.body.id;  // No validation!\n    db.query('S",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.missing-authentication-check-js violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 10,
+      "rule_id": "policies.no-input-validation-body",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_file.js",
+      "line_number": 8,
+      "description": "User input from request body not validated",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "const userId = req.body.id;  // No validation!",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "const userId = validateUserId(req.body.id);",
+        "explanation": "Validate all user input before processing.",
+        "steps": [
+          "Create validation function",
+          "Check input type and format",
+          "Return error for invalid input"
+        ],
+        "priority": "HIGH"
+      }
+    },
+    {
+      "id": 11,
+      "rule_id": "policies.dpdpa-data-collection-no-consent",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_file.js",
+      "line_number": 14,
+      "description": "DPDPA: Personal data stored without consent check",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "database.store({\n        email: email,\n        phone: phone\n    });",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.dpdpa-data-collection-no-consent violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 12,
+      "rule_id": "policies.rbi-weak-password-policy",
+      "severity": "high",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_file.js",
+      "line_number": 23,
+      "description": "RBI: Password minimum length < 8 violates security standards",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "minLength: 4  // Too short!",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.rbi-weak-password-policy violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 13,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_real_scan.py",
+      "line_number": 8,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "sys.path.append(os.path.join(os.path.dirname(__file__), 'ai engine'))",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 14,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\test_semgrep.py",
+      "line_number": 8,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "sys.path.append(os.path.join(os.path.dirname(__file__), 'ai engine'))",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 15,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\utils\\git_utils.py",
+      "line_number": 15,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "clone_path = os.path.join(temp_dir, \"repo\")",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 16,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\utils\\git_utils.py",
+      "line_number": 51,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "rel_path = os.path.relpath(os.path.join(root, filename), clone_path)",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    },
+    {
+      "id": 17,
+      "rule_id": "policies.path-traversal-python",
+      "severity": "critical",
+      "file_path": "D:\\devsecops-compliance-auditor-\\backend\\utils\\git_utils.py",
+      "line_number": 111,
+      "description": "Path traversal vulnerability - validate file paths",
+      "framework": "IT_ACT_2000",
+      "code_snippet": "file_path = os.path.join(root, file)",
+      "ai_verified": false,
+      "ai_confidence": 0,
+      "remediation": {
+        "fixed_code": "// Apply security best practices",
+        "explanation": "Fix policies.path-traversal-python violation according to security guidelines.",
+        "steps": [
+          "Review the violation details",
+          "Apply recommended fix from documentation",
+          "Test the changes thoroughly"
+        ],
+        "priority": "MEDIUM"
+      }
+    }
+  ],
+  "remediation_summary": {
+    "total_violations": 17,
+    "by_priority": {
+      "CRITICAL": 3,
+      "HIGH": 2,
+      "MEDIUM": 12,
+      "LOW": 0
+    },
+    "by_framework": {
+      "GENERAL": 17
+    },
+    "estimated_fix_time_hours": 8.5
+  }
+}

@@ -1,0 +1,827 @@
+{
+  "metadata": {
+    "generated_date": "2026-04-05T18:42:19.678820",
+    "version": "1.0",
+    "frameworks": [
+      "DPDPA",
+      "RBI",
+      "SEBI",
+      "IT_ACT",
+      "ISO_8000",
+      "SPDI"
+    ],
+    "country": "India",
+    "description": "Comprehensive Indian compliance rules for code scanning"
+  },
+  "total_rules": 18,
+  "rules_by_framework": {
+    "DPDPA": 5,
+    "RBI": 5,
+    "SEBI": 2,
+    "IT_ACT": 3,
+    "ISO_8000": 1,
+    "GENERAL_SECURITY": 2
+  },
+  "rules": [
+    {
+      "id": "dpdpa_001",
+      "framework": "DPDPA",
+      "title": "Consent Before Processing",
+      "description": "Personal data must not be processed without explicit consent",
+      "severity": "critical",
+      "section": "DPDPA Section 7 - Consent",
+      "patterns": [
+        "db.store(userData) without consent check",
+        "process(personalData) without consent.validate()",
+        "sendEmail(user.email) without marketing_consent",
+        "analytics.track(userData) without analytics_consent",
+        "thirdParty.share(userData) without consent",
+        "profile_user(data) without consent"
+      ],
+      "keywords": [
+        "personal_data",
+        "pii",
+        "consent",
+        "user_data"
+      ],
+      "fix_template": "\nif (!user.consent.processing) {\n    throw new UnauthorizedError('Consent required for data processing');\n}\n// Then process data\ndatabase.store(userData);\n                        ",
+      "impact": "Violation penalty: ₹5 crore or 2% annual turnover, criminal liability"
+    },
+    {
+      "id": "dpdpa_002",
+      "framework": "DPDPA",
+      "title": "Purpose Limitation",
+      "description": "Data must only be used for disclosed, consented purposes",
+      "severity": "critical",
+      "section": "DPDPA - Purpose Limitation Principle",
+      "patterns": [
+        "collect for X, use for Y",
+        "telemetry_data used for profiling",
+        "payment_info used for marketing",
+        "health_data used for insurance_prediction",
+        "location_data used for competitor_analysis"
+      ],
+      "keywords": [
+        "purpose",
+        "secondary_use",
+        "data_flow",
+        "usage_context"
+      ],
+      "fix_template": "\n// Validate purpose before use\nif (data.intended_purpose !== current_operation.purpose) {\n    throw new PurposeViolation('Data purpose mismatch');\n}\n                        ",
+      "impact": "Data processing for unauthorized purpose = violation"
+    },
+    {
+      "id": "dpdpa_003",
+      "framework": "DPDPA",
+      "title": "Data Minimization",
+      "description": "Only necessary personal data should be collected and processed",
+      "severity": "high",
+      "section": "DPDPA - Minimization Principle",
+      "patterns": [
+        "collect: [email, phone, address, ssn, dob]  // Too much data",
+        "SELECT * FROM users_pii",
+        "store_all_fields(userData)",
+        "return {...user, ssn, phone, address, dob}  // Excessive"
+      ],
+      "keywords": [
+        "data_minimization",
+        "excessive_collection",
+        "unnecessary_fields"
+      ],
+      "fix_template": "\n// Only collect necessary fields\nconst requiredFields = ['email', 'phone'];  // Just what's needed\nconst userData = {\n    email: user.email,\n    phone: user.phone\n    // Remove ssn, dob, address, etc.\n};\n                        ",
+      "impact": "Unnecessary data collection = principle violation"
+    },
+    {
+      "id": "dpdpa_004",
+      "framework": "DPDPA",
+      "title": "Data Breach Notification",
+      "description": "Notify users within 72 hours of discovering a breach",
+      "severity": "critical",
+      "section": "DPDPA Section 8.1 - Breach Notification",
+      "patterns": [
+        "catch(security_breach) { /* do nothing */ }",
+        "if (database_compromised) { log_only() }  // No notification",
+        "breach_detected = true; // No action",
+        "compromised = true; continue_operation()  // No alert"
+      ],
+      "keywords": [
+        "breach",
+        "notification",
+        "data_leak",
+        "unauthorized_access"
+      ],
+      "fix_template": "\ntry {\n    protectDatabase();\n} catch (BreachException e) {\n    logger.critical('BREACH DETECTED');\n    await notifyUsers(72_hours_deadline);\n    await notifyAuthority();\n    recordBreach();\n}\n                        ",
+      "impact": "No breach notification = ₹10 crore penalty"
+    },
+    {
+      "id": "dpdpa_005",
+      "framework": "DPDPA",
+      "title": "User Rights Implementation",
+      "description": "Implement right to access, rectification, erasure, portability",
+      "severity": "high",
+      "section": "DPDPA Sections 16-18 - User Rights",
+      "patterns": [
+        "No DELETE endpoint",
+        "No EXPORT endpoint",
+        "No data correction mechanism",
+        "No access log for user requests"
+      ],
+      "keywords": [
+        "user_rights",
+        "data_deletion",
+        "data_portability",
+        "right_to_access"
+      ],
+      "fix_template": "\n// Implement user rights endpoints\n@app.get('/api/user/data/access')\nasync def right_to_access(): \n    return user_personal_data\n\n@app.delete('/api/user/data')\nasync def right_to_erasure():\n    await delete_all_personal_data(user_id)\n    \n@app.get('/api/user/data/export')\nasync def right_to_portability():\n    return export_personal_data_json(user_id)\n                        ",
+      "impact": "Missing user rights = non-compliance"
+    },
+    {
+      "id": "rbi_001",
+      "framework": "RBI",
+      "title": "Authorization Control",
+      "description": "Authorization must be enforced on server-side, not client-provided",
+      "severity": "critical",
+      "section": "RBI Information Security Guidelines",
+      "patterns": [
+        "const role = req.body.role",
+        "const access_level = req.query.level",
+        "if (req.body.is_admin) { approve_transaction() }",
+        "user.role = req.body.role"
+      ],
+      "keywords": [
+        "authorization",
+        "role_check",
+        "privilege",
+        "admin"
+      ],
+      "fix_template": "\n// WRONG:  const role = req.body.role\n// RIGHT:  Extract from verified JWT/session\nconst role = extractFromJWT(req.headers.authorization);\n\nif (role !== 'admin') {\n    return 403;\n}\n                        ",
+      "impact": "Authorization bypass = unauthorized transactions"
+    },
+    {
+      "id": "rbi_002",
+      "framework": "RBI",
+      "title": "Transaction Atomicity",
+      "description": "Financial transactions must be atomic (all-or-nothing)",
+      "severity": "critical",
+      "section": "RBI Guidelines - Transaction Integrity",
+      "patterns": [
+        "balance = get_balance(); if balance > amount: debit();  // Race condition",
+        "check(balance); debit(); credit();  // Not atomic",
+        "await select(); // ... gap ... await update();  // Concurrent",
+        "read + write without transaction"
+      ],
+      "keywords": [
+        "transaction",
+        "atomic",
+        "race_condition",
+        "concurrency"
+      ],
+      "fix_template": "\n// Use pessimistic locking or transactions\nBEGIN TRANSACTION;\nbalance = SELECT balance FROM accounts WHERE id = ? FOR UPDATE;\nIF balance >= amount THEN\n    UPDATE accounts SET balance = balance - amount;\n    UPDATE accounts SET balance = balance + amount WHERE id = target;\n    COMMIT;\nELSE\n    ROLLBACK;\nEND IF;\n                        ",
+      "impact": "Race conditions = double charging, financial loss"
+    },
+    {
+      "id": "rbi_003",
+      "framework": "RBI",
+      "title": "Encryption in Transit and at Rest",
+      "description": "Use TLS 1.2+ for transit, AES-256 for rest",
+      "severity": "critical",
+      "section": "RBI Guidelines - Encryption",
+      "patterns": [
+        "http://api.bank.com/transfer  // Not HTTPS",
+        "store(plaintext_password)",
+        "send_over_http(card_details)",
+        "database without encryption"
+      ],
+      "keywords": [
+        "encryption",
+        "https",
+        "tls",
+        "aes",
+        "plaintext"
+      ],
+      "fix_template": "\n// Enforce TLS 1.2+ everywhere\nconst secureConnection = tls.createSecureContext({\n    minVersion: 'TLSv1.2',\n    maxVersion: 'TLSv1.3'\n});\n\n// Encrypt sensitive data at rest\nconst encrypted = encrypt(sensitiveData, 'AES-256');\n                        ",
+      "impact": "Unencrypted transmission = data interception, fraud"
+    },
+    {
+      "id": "rbi_004",
+      "framework": "RBI",
+      "title": "Immutable Audit Trails",
+      "description": "Maintain 3-year audit logs of all transactions",
+      "severity": "high",
+      "section": "RBI Guidelines - Audit Trail",
+      "patterns": [
+        "No transaction logging",
+        "Modifiable logs",
+        "In-memory logging only",
+        "Log retention < 3 years"
+      ],
+      "keywords": [
+        "audit",
+        "logging",
+        "transaction_log",
+        "trail"
+      ],
+      "fix_template": "\n// Append-only audit log\nasync function logTransaction(txn) {\n    const auditEntry = {\n        timestamp: Date.now(),\n        user_id: txn.user_id,\n        action: txn.action,\n        amount: txn.amount,\n        status: txn.status,\n        hash: sha256(JSON.stringify(txn))  // Immutable\n    };\n    \n    await auditLog.append(auditEntry);  // Append-only database\n    // Keep for 3+ years\n}\n                        ",
+      "impact": "Missing audit logs = non-compliance, cannot prove legitimacy"
+    },
+    {
+      "id": "rbi_005",
+      "framework": "RBI",
+      "title": "Rate Limiting and Brute-Force Protection",
+      "description": "Implement rate limiting on sensitive operations",
+      "severity": "high",
+      "section": "RBI Guidelines - Security Controls",
+      "patterns": [
+        "No rate limit on login",
+        "Unlimited transaction attempts",
+        "No CAPTCHA on suspicious activity",
+        "Unlimited API requests"
+      ],
+      "keywords": [
+        "rate_limit",
+        "brute_force",
+        "throttle",
+        "captcha"
+      ],
+      "fix_template": "\n// Implement rate limiting\nconst limiter = rateLimit({\n    windowMs: 15 * 60 * 1000,  // 15 minutes\n    max: 5  // Max 5 requests per IP\n});\n\napp.post('/login', limiter, handleLogin);\napp.post('/transfer', limiter, handleTransfer);\n                        ",
+      "impact": "No rate limiting = brute-force attacks, account takeover"
+    },
+    {
+      "id": "sebi_001",
+      "framework": "SEBI",
+      "title": "Anti-Market Manipulation",
+      "description": "Prevent unfair trading practices and information asymmetry",
+      "severity": "critical",
+      "section": "SEBI - Insider Trading Regulations",
+      "patterns": [
+        "selective_disclosure(insider_info, special_user)",
+        "delay_public_info(news) { give_to_vip_first() }",
+        "front_running: execute_trade_before_client_order",
+        "paint_tape: fake_volume_trading"
+      ],
+      "keywords": [
+        "insider_trading",
+        "market_manipulation",
+        "front_running"
+      ],
+      "fix_template": "\n// Ensure simultaneous disclosure\nasync function announceInfo(info) {\n    // Release to ALL users at same time\n    await broadcast(info, ALL_USERS);\n    \n    // Log order of disclosure\n    logSimultaneousDisclosure(info, timestamp);\n}\n\n// Prevent front-running\nvalidateOrderSequence(client_order_timestamp, execution_timestamp);\n                        ",
+      "impact": "Market manipulation penalty under SEBI Act"
+    },
+    {
+      "id": "sebi_002",
+      "framework": "SEBI",
+      "title": "Transparency in Trading",
+      "description": "Transparent pricing, no hidden charges",
+      "severity": "high",
+      "section": "SEBI - Investor Protection",
+      "patterns": [
+        "hidden_commission",
+        "undisclosed_fees",
+        "variable_pricing_by_user"
+      ],
+      "keywords": [
+        "transparency",
+        "fees",
+        "charges",
+        "pricing"
+      ],
+      "fix_template": "\n// Transparent pricing\nconst quote = {\n    symbol: 'RELIANCE',\n    buy_price: 2500.00,\n    sell_price: 2500.50,\n    charges: {\n        brokerage: 20,\n        fee: 5,\n        tax: 45\n    },\n    total: 2570.50\n};\n// Always SHOW all charges before confirmation\nshowFullBreakdown(quote, user);\n                        ",
+      "impact": "Lack of transparency = investor protection violation"
+    },
+    {
+      "id": "it_001",
+      "framework": "IT_ACT",
+      "title": "Unauthorized Access Prevention",
+      "description": "Prevent unauthorized access under Section 43/66",
+      "severity": "critical",
+      "section": "IT Act Section 43 - Unauthorized Access",
+      "patterns": [
+        "No authentication on sensitive endpoints",
+        "@app.get('/admin/users')  // No auth check",
+        "SELECT * allowed without login",
+        "SQL injection vulnerability"
+      ],
+      "keywords": [
+        "unauthorized_access",
+        "authentication",
+        "injection"
+      ],
+      "fix_template": "\n@app.get('/admin/users')\n@require_authentication  // Add auth middleware\n@require_role('admin')   // Add authorization\nasync def get_users():\n    return protected_data\n\n// Validate all inputs\nuser_id = validate_integer(request.query.user_id)\nquery = select_prepared_statement(user_id)  // Use parameterized queries\n                        ",
+      "impact": "Section 43 - damages up to ₹1 crore"
+    },
+    {
+      "id": "it_002",
+      "framework": "IT_ACT",
+      "title": "Sensitive Data Protection",
+      "description": "Protect SPDI (Sensitive Personal Data/Information)",
+      "severity": "critical",
+      "section": "SPDI Rules - Data Security",
+      "patterns": [
+        "logger.info(f'User: {email}, {phone}, {ssn}')",
+        "console.log(sensitiveData)",
+        "send_via_email(ssn)",
+        "store_plaintext(password)"
+      ],
+      "keywords": [
+        "spdi",
+        "sensitive_data",
+        "pii",
+        "logging"
+      ],
+      "fix_template": "\n// Never log PII\nlogger.info('User registration completed');  // ✓ Safe\n\n// Mask sensitive data\nmasked_phone = phone.slice(-4).padStart(10, '*');  // ****345678\nmasked_ssn = ssn.slice(-2).padStart(12, '*');     // **********23\n\n// Hash passwords\npassword_hash = bcrypt.hash(password, 10);\n\n// Send only essential data\nsend_email(email, {\n    // Only email address, no sensitive data\n});\n                        ",
+      "impact": "SPDI compromise = Section 66/72 - imprisonment + penalty"
+    },
+    {
+      "id": "it_003",
+      "framework": "IT_ACT",
+      "title": "Input Validation",
+      "description": "Validate all inputs to prevent injection attacks",
+      "severity": "critical",
+      "section": "IT Act Section 65 - Tampering with Computer Source",
+      "patterns": [
+        "query = 'SELECT * FROM users WHERE id = ' + request.id",
+        "eval(request.code)",
+        "exec(user_input)",
+        "No input sanitization"
+      ],
+      "keywords": [
+        "injection",
+        "validation",
+        "sanitization"
+      ],
+      "fix_template": "\n// Use parameterized queries\nquery = 'SELECT * FROM users WHERE id = ?';\nresult = execute(query, [user_id]);\n\n// Validate and sanitize\nif (!isValidEmail(email)) throw new ValidationError();\nsanitized_input = sanitize(request.comment);\n                        ",
+      "impact": "Section 65 - Tampering = imprisonment up to 3 years"
+    },
+    {
+      "id": "iso_001",
+      "framework": "ISO_8000",
+      "title": "Data Accuracy",
+      "description": "Data must be accurate and verified",
+      "severity": "high",
+      "section": "ISO 8000 - Data Quality",
+      "patterns": [
+        "store without validation",
+        "No verification mechanism",
+        "Accept unvalidated user input directly"
+      ],
+      "keywords": [
+        "accuracy",
+        "validation",
+        "verification"
+      ],
+      "fix_template": "\n// Verify data before storage\nif (validatePhoneNumber(phone) && validateEmail(email)) {\n    await database.store(userData);\n} else {\n    throw new ValidationError('Invalid data format');\n}\n\n// Use checksums\ndata_hash = sha256(data);\nstore_with_hash(data, data_hash);\n                        ",
+      "impact": "Poor data quality affects business decisions"
+    },
+    {
+      "id": "sec_001",
+      "framework": "GENERAL_SECURITY",
+      "title": "No Hardcoded Credentials",
+      "description": "Never store API keys, passwords in code",
+      "severity": "critical",
+      "section": "",
+      "patterns": [
+        "api_key = \"sk_live_abcd1234\"",
+        "password = \"admin123\"",
+        "db_password = \"mysql_root\"",
+        "aws_secret = \"aws_secret_access_key\""
+      ],
+      "keywords": [
+        "credentials",
+        "api_key",
+        "password",
+        "secret"
+      ],
+      "fix_template": "\n// Use environment variables\nconst api_key = process.env.GROQ_API_KEY;\nconst db_password = process.env.DB_PASSWORD;\n\n// Or use secrets manager\nconst secret = await secretsManager.get('db-password');\n                        ",
+      "impact": "Hardcoded secrets = account compromise"
+    },
+    {
+      "id": "sec_002",
+      "framework": "GENERAL_SECURITY",
+      "title": "SQL Injection Prevention",
+      "description": "Always use parameterized queries",
+      "severity": "critical",
+      "section": "",
+      "patterns": [
+        "f\"SELECT * FROM users WHERE id = {user_id}\"",
+        "query = f'UPDATE {table} SET {column} = {value}'",
+        "Non-parameterized SQL queries"
+      ],
+      "keywords": [
+        "sql_injection",
+        "query",
+        "parameterized"
+      ],
+      "fix_template": "\n// WRONG:\nquery = f\"SELECT * FROM users WHERE id = {user_id}\"\n\n// RIGHT:\nquery = \"SELECT * FROM users WHERE id = ?\"\ndatabase.execute(query, [user_id])\n                        ",
+      "impact": "SQL injection = database compromise"
+    }
+  ],
+  "frameworks": {
+    "DPDPA": {
+      "title": "Digital Personal Data Protection Act, 2023",
+      "authority": "Ministry of Electronics and Information Technology (MeitY)",
+      "rules": {
+        "dpdpa_001_consent_before_processing": {
+          "id": "dpdpa_001",
+          "title": "Consent Before Processing",
+          "description": "Personal data must not be processed without explicit consent",
+          "section": "DPDPA Section 7 - Consent",
+          "severity": "critical",
+          "patterns": [
+            "db.store(userData) without consent check",
+            "process(personalData) without consent.validate()",
+            "sendEmail(user.email) without marketing_consent",
+            "analytics.track(userData) without analytics_consent",
+            "thirdParty.share(userData) without consent",
+            "profile_user(data) without consent"
+          ],
+          "keywords": [
+            "personal_data",
+            "pii",
+            "consent",
+            "user_data"
+          ],
+          "fix_template": "\nif (!user.consent.processing) {\n    throw new UnauthorizedError('Consent required for data processing');\n}\n// Then process data\ndatabase.store(userData);\n                        ",
+          "impact": "Violation penalty: ₹5 crore or 2% annual turnover, criminal liability"
+        },
+        "dpdpa_002_purpose_limitation": {
+          "id": "dpdpa_002",
+          "title": "Purpose Limitation",
+          "description": "Data must only be used for disclosed, consented purposes",
+          "section": "DPDPA - Purpose Limitation Principle",
+          "severity": "critical",
+          "patterns": [
+            "collect for X, use for Y",
+            "telemetry_data used for profiling",
+            "payment_info used for marketing",
+            "health_data used for insurance_prediction",
+            "location_data used for competitor_analysis"
+          ],
+          "keywords": [
+            "purpose",
+            "secondary_use",
+            "data_flow",
+            "usage_context"
+          ],
+          "fix_template": "\n// Validate purpose before use\nif (data.intended_purpose !== current_operation.purpose) {\n    throw new PurposeViolation('Data purpose mismatch');\n}\n                        ",
+          "impact": "Data processing for unauthorized purpose = violation"
+        },
+        "dpdpa_003_data_minimization": {
+          "id": "dpdpa_003",
+          "title": "Data Minimization",
+          "description": "Only necessary personal data should be collected and processed",
+          "section": "DPDPA - Minimization Principle",
+          "severity": "high",
+          "patterns": [
+            "collect: [email, phone, address, ssn, dob]  // Too much data",
+            "SELECT * FROM users_pii",
+            "store_all_fields(userData)",
+            "return {...user, ssn, phone, address, dob}  // Excessive"
+          ],
+          "keywords": [
+            "data_minimization",
+            "excessive_collection",
+            "unnecessary_fields"
+          ],
+          "fix_template": "\n// Only collect necessary fields\nconst requiredFields = ['email', 'phone'];  // Just what's needed\nconst userData = {\n    email: user.email,\n    phone: user.phone\n    // Remove ssn, dob, address, etc.\n};\n                        ",
+          "impact": "Unnecessary data collection = principle violation"
+        },
+        "dpdpa_004_breach_notification": {
+          "id": "dpdpa_004",
+          "title": "Data Breach Notification",
+          "description": "Notify users within 72 hours of discovering a breach",
+          "section": "DPDPA Section 8.1 - Breach Notification",
+          "severity": "critical",
+          "patterns": [
+            "catch(security_breach) { /* do nothing */ }",
+            "if (database_compromised) { log_only() }  // No notification",
+            "breach_detected = true; // No action",
+            "compromised = true; continue_operation()  // No alert"
+          ],
+          "keywords": [
+            "breach",
+            "notification",
+            "data_leak",
+            "unauthorized_access"
+          ],
+          "fix_template": "\ntry {\n    protectDatabase();\n} catch (BreachException e) {\n    logger.critical('BREACH DETECTED');\n    await notifyUsers(72_hours_deadline);\n    await notifyAuthority();\n    recordBreach();\n}\n                        ",
+          "impact": "No breach notification = ₹10 crore penalty"
+        },
+        "dpdpa_005_user_rights": {
+          "id": "dpdpa_005",
+          "title": "User Rights Implementation",
+          "description": "Implement right to access, rectification, erasure, portability",
+          "section": "DPDPA Sections 16-18 - User Rights",
+          "severity": "high",
+          "patterns": [
+            "No DELETE endpoint",
+            "No EXPORT endpoint",
+            "No data correction mechanism",
+            "No access log for user requests"
+          ],
+          "keywords": [
+            "user_rights",
+            "data_deletion",
+            "data_portability",
+            "right_to_access"
+          ],
+          "fix_template": "\n// Implement user rights endpoints\n@app.get('/api/user/data/access')\nasync def right_to_access(): \n    return user_personal_data\n\n@app.delete('/api/user/data')\nasync def right_to_erasure():\n    await delete_all_personal_data(user_id)\n    \n@app.get('/api/user/data/export')\nasync def right_to_portability():\n    return export_personal_data_json(user_id)\n                        ",
+          "impact": "Missing user rights = non-compliance"
+        }
+      }
+    },
+    "RBI": {
+      "title": "Reserve Bank of India Guidelines",
+      "authority": "Reserve Bank of India",
+      "rules": {
+        "rbi_001_authorization_control": {
+          "id": "rbi_001",
+          "title": "Authorization Control",
+          "description": "Authorization must be enforced on server-side, not client-provided",
+          "section": "RBI Information Security Guidelines",
+          "severity": "critical",
+          "patterns": [
+            "const role = req.body.role",
+            "const access_level = req.query.level",
+            "if (req.body.is_admin) { approve_transaction() }",
+            "user.role = req.body.role"
+          ],
+          "keywords": [
+            "authorization",
+            "role_check",
+            "privilege",
+            "admin"
+          ],
+          "fix_template": "\n// WRONG:  const role = req.body.role\n// RIGHT:  Extract from verified JWT/session\nconst role = extractFromJWT(req.headers.authorization);\n\nif (role !== 'admin') {\n    return 403;\n}\n                        ",
+          "impact": "Authorization bypass = unauthorized transactions"
+        },
+        "rbi_002_transaction_atomicity": {
+          "id": "rbi_002",
+          "title": "Transaction Atomicity",
+          "description": "Financial transactions must be atomic (all-or-nothing)",
+          "section": "RBI Guidelines - Transaction Integrity",
+          "severity": "critical",
+          "patterns": [
+            "balance = get_balance(); if balance > amount: debit();  // Race condition",
+            "check(balance); debit(); credit();  // Not atomic",
+            "await select(); // ... gap ... await update();  // Concurrent",
+            "read + write without transaction"
+          ],
+          "keywords": [
+            "transaction",
+            "atomic",
+            "race_condition",
+            "concurrency"
+          ],
+          "fix_template": "\n// Use pessimistic locking or transactions\nBEGIN TRANSACTION;\nbalance = SELECT balance FROM accounts WHERE id = ? FOR UPDATE;\nIF balance >= amount THEN\n    UPDATE accounts SET balance = balance - amount;\n    UPDATE accounts SET balance = balance + amount WHERE id = target;\n    COMMIT;\nELSE\n    ROLLBACK;\nEND IF;\n                        ",
+          "impact": "Race conditions = double charging, financial loss"
+        },
+        "rbi_003_encryption_enforcement": {
+          "id": "rbi_003",
+          "title": "Encryption in Transit and at Rest",
+          "description": "Use TLS 1.2+ for transit, AES-256 for rest",
+          "section": "RBI Guidelines - Encryption",
+          "severity": "critical",
+          "patterns": [
+            "http://api.bank.com/transfer  // Not HTTPS",
+            "store(plaintext_password)",
+            "send_over_http(card_details)",
+            "database without encryption"
+          ],
+          "keywords": [
+            "encryption",
+            "https",
+            "tls",
+            "aes",
+            "plaintext"
+          ],
+          "fix_template": "\n// Enforce TLS 1.2+ everywhere\nconst secureConnection = tls.createSecureContext({\n    minVersion: 'TLSv1.2',\n    maxVersion: 'TLSv1.3'\n});\n\n// Encrypt sensitive data at rest\nconst encrypted = encrypt(sensitiveData, 'AES-256');\n                        ",
+          "impact": "Unencrypted transmission = data interception, fraud"
+        },
+        "rbi_004_audit_trail": {
+          "id": "rbi_004",
+          "title": "Immutable Audit Trails",
+          "description": "Maintain 3-year audit logs of all transactions",
+          "section": "RBI Guidelines - Audit Trail",
+          "severity": "high",
+          "patterns": [
+            "No transaction logging",
+            "Modifiable logs",
+            "In-memory logging only",
+            "Log retention < 3 years"
+          ],
+          "keywords": [
+            "audit",
+            "logging",
+            "transaction_log",
+            "trail"
+          ],
+          "fix_template": "\n// Append-only audit log\nasync function logTransaction(txn) {\n    const auditEntry = {\n        timestamp: Date.now(),\n        user_id: txn.user_id,\n        action: txn.action,\n        amount: txn.amount,\n        status: txn.status,\n        hash: sha256(JSON.stringify(txn))  // Immutable\n    };\n    \n    await auditLog.append(auditEntry);  // Append-only database\n    // Keep for 3+ years\n}\n                        ",
+          "impact": "Missing audit logs = non-compliance, cannot prove legitimacy"
+        },
+        "rbi_005_rate_limiting": {
+          "id": "rbi_005",
+          "title": "Rate Limiting and Brute-Force Protection",
+          "description": "Implement rate limiting on sensitive operations",
+          "section": "RBI Guidelines - Security Controls",
+          "severity": "high",
+          "patterns": [
+            "No rate limit on login",
+            "Unlimited transaction attempts",
+            "No CAPTCHA on suspicious activity",
+            "Unlimited API requests"
+          ],
+          "keywords": [
+            "rate_limit",
+            "brute_force",
+            "throttle",
+            "captcha"
+          ],
+          "fix_template": "\n// Implement rate limiting\nconst limiter = rateLimit({\n    windowMs: 15 * 60 * 1000,  // 15 minutes\n    max: 5  // Max 5 requests per IP\n});\n\napp.post('/login', limiter, handleLogin);\napp.post('/transfer', limiter, handleTransfer);\n                        ",
+          "impact": "No rate limiting = brute-force attacks, account takeover"
+        }
+      }
+    },
+    "SEBI": {
+      "title": "Securities and Exchange Board of India",
+      "authority": "SEBI",
+      "rules": {
+        "sebi_001_market_manipulation": {
+          "id": "sebi_001",
+          "title": "Anti-Market Manipulation",
+          "description": "Prevent unfair trading practices and information asymmetry",
+          "section": "SEBI - Insider Trading Regulations",
+          "severity": "critical",
+          "patterns": [
+            "selective_disclosure(insider_info, special_user)",
+            "delay_public_info(news) { give_to_vip_first() }",
+            "front_running: execute_trade_before_client_order",
+            "paint_tape: fake_volume_trading"
+          ],
+          "keywords": [
+            "insider_trading",
+            "market_manipulation",
+            "front_running"
+          ],
+          "fix_template": "\n// Ensure simultaneous disclosure\nasync function announceInfo(info) {\n    // Release to ALL users at same time\n    await broadcast(info, ALL_USERS);\n    \n    // Log order of disclosure\n    logSimultaneousDisclosure(info, timestamp);\n}\n\n// Prevent front-running\nvalidateOrderSequence(client_order_timestamp, execution_timestamp);\n                        ",
+          "impact": "Market manipulation penalty under SEBI Act"
+        },
+        "sebi_002_transparency": {
+          "id": "sebi_002",
+          "title": "Transparency in Trading",
+          "description": "Transparent pricing, no hidden charges",
+          "section": "SEBI - Investor Protection",
+          "severity": "high",
+          "patterns": [
+            "hidden_commission",
+            "undisclosed_fees",
+            "variable_pricing_by_user"
+          ],
+          "keywords": [
+            "transparency",
+            "fees",
+            "charges",
+            "pricing"
+          ],
+          "fix_template": "\n// Transparent pricing\nconst quote = {\n    symbol: 'RELIANCE',\n    buy_price: 2500.00,\n    sell_price: 2500.50,\n    charges: {\n        brokerage: 20,\n        fee: 5,\n        tax: 45\n    },\n    total: 2570.50\n};\n// Always SHOW all charges before confirmation\nshowFullBreakdown(quote, user);\n                        ",
+          "impact": "Lack of transparency = investor protection violation"
+        }
+      }
+    },
+    "IT_ACT": {
+      "title": "Information Technology Act 2000 & Sensitive Personal Data/Information (SPDI) Rules",
+      "authority": "Ministry of Electronics and Information Technology",
+      "rules": {
+        "it_001_unauthorized_access": {
+          "id": "it_001",
+          "title": "Unauthorized Access Prevention",
+          "description": "Prevent unauthorized access under Section 43/66",
+          "section": "IT Act Section 43 - Unauthorized Access",
+          "severity": "critical",
+          "patterns": [
+            "No authentication on sensitive endpoints",
+            "@app.get('/admin/users')  // No auth check",
+            "SELECT * allowed without login",
+            "SQL injection vulnerability"
+          ],
+          "keywords": [
+            "unauthorized_access",
+            "authentication",
+            "injection"
+          ],
+          "fix_template": "\n@app.get('/admin/users')\n@require_authentication  // Add auth middleware\n@require_role('admin')   // Add authorization\nasync def get_users():\n    return protected_data\n\n// Validate all inputs\nuser_id = validate_integer(request.query.user_id)\nquery = select_prepared_statement(user_id)  // Use parameterized queries\n                        ",
+          "impact": "Section 43 - damages up to ₹1 crore"
+        },
+        "it_002_data_protection": {
+          "id": "it_002",
+          "title": "Sensitive Data Protection",
+          "description": "Protect SPDI (Sensitive Personal Data/Information)",
+          "section": "SPDI Rules - Data Security",
+          "severity": "critical",
+          "patterns": [
+            "logger.info(f'User: {email}, {phone}, {ssn}')",
+            "console.log(sensitiveData)",
+            "send_via_email(ssn)",
+            "store_plaintext(password)"
+          ],
+          "keywords": [
+            "spdi",
+            "sensitive_data",
+            "pii",
+            "logging"
+          ],
+          "fix_template": "\n// Never log PII\nlogger.info('User registration completed');  // ✓ Safe\n\n// Mask sensitive data\nmasked_phone = phone.slice(-4).padStart(10, '*');  // ****345678\nmasked_ssn = ssn.slice(-2).padStart(12, '*');     // **********23\n\n// Hash passwords\npassword_hash = bcrypt.hash(password, 10);\n\n// Send only essential data\nsend_email(email, {\n    // Only email address, no sensitive data\n});\n                        ",
+          "impact": "SPDI compromise = Section 66/72 - imprisonment + penalty"
+        },
+        "it_003_input_validation": {
+          "id": "it_003",
+          "title": "Input Validation",
+          "description": "Validate all inputs to prevent injection attacks",
+          "section": "IT Act Section 65 - Tampering with Computer Source",
+          "severity": "critical",
+          "patterns": [
+            "query = 'SELECT * FROM users WHERE id = ' + request.id",
+            "eval(request.code)",
+            "exec(user_input)",
+            "No input sanitization"
+          ],
+          "keywords": [
+            "injection",
+            "validation",
+            "sanitization"
+          ],
+          "fix_template": "\n// Use parameterized queries\nquery = 'SELECT * FROM users WHERE id = ?';\nresult = execute(query, [user_id]);\n\n// Validate and sanitize\nif (!isValidEmail(email)) throw new ValidationError();\nsanitized_input = sanitize(request.comment);\n                        ",
+          "impact": "Section 65 - Tampering = imprisonment up to 3 years"
+        }
+      }
+    },
+    "ISO_8000": {
+      "title": "ISO 8000 - Data Quality",
+      "authority": "International Standards Organization",
+      "rules": {
+        "iso_001_data_accuracy": {
+          "id": "iso_001",
+          "title": "Data Accuracy",
+          "description": "Data must be accurate and verified",
+          "section": "ISO 8000 - Data Quality",
+          "severity": "high",
+          "patterns": [
+            "store without validation",
+            "No verification mechanism",
+            "Accept unvalidated user input directly"
+          ],
+          "keywords": [
+            "accuracy",
+            "validation",
+            "verification"
+          ],
+          "fix_template": "\n// Verify data before storage\nif (validatePhoneNumber(phone) && validateEmail(email)) {\n    await database.store(userData);\n} else {\n    throw new ValidationError('Invalid data format');\n}\n\n// Use checksums\ndata_hash = sha256(data);\nstore_with_hash(data, data_hash);\n                        ",
+          "impact": "Poor data quality affects business decisions"
+        }
+      }
+    },
+    "GENERAL_SECURITY": {
+      "title": "General Security Best Practices",
+      "authority": "Industry Standard",
+      "rules": {
+        "sec_001_credentials_in_code": {
+          "id": "sec_001",
+          "title": "No Hardcoded Credentials",
+          "description": "Never store API keys, passwords in code",
+          "severity": "critical",
+          "patterns": [
+            "api_key = \"sk_live_abcd1234\"",
+            "password = \"admin123\"",
+            "db_password = \"mysql_root\"",
+            "aws_secret = \"aws_secret_access_key\""
+          ],
+          "keywords": [
+            "credentials",
+            "api_key",
+            "password",
+            "secret"
+          ],
+          "fix_template": "\n// Use environment variables\nconst api_key = process.env.GROQ_API_KEY;\nconst db_password = process.env.DB_PASSWORD;\n\n// Or use secrets manager\nconst secret = await secretsManager.get('db-password');\n                        ",
+          "impact": "Hardcoded secrets = account compromise"
+        },
+        "sec_002_sql_injection": {
+          "id": "sec_002",
+          "title": "SQL Injection Prevention",
+          "description": "Always use parameterized queries",
+          "severity": "critical",
+          "patterns": [
+            "f\"SELECT * FROM users WHERE id = {user_id}\"",
+            "query = f'UPDATE {table} SET {column} = {value}'",
+            "Non-parameterized SQL queries"
+          ],
+          "keywords": [
+            "sql_injection",
+            "query",
+            "parameterized"
+          ],
+          "fix_template": "\n// WRONG:\nquery = f\"SELECT * FROM users WHERE id = {user_id}\"\n\n// RIGHT:\nquery = \"SELECT * FROM users WHERE id = ?\"\ndatabase.execute(query, [user_id])\n                        ",
+          "impact": "SQL injection = database compromise"
+        }
+      }
+    }
+  }
+}

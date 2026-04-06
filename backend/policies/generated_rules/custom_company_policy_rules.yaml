@@ -1,0 +1,199 @@
+rules:
+- id: custom.policy.rule001
+  pattern: db.store($USER_DATA) unless $CONSENT_CHECK
+  message: Missing consent check before processing personal data
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule002
+  pattern: collect($DATA, $PURPOSE_X); use($DATA, $PURPOSE_Y)
+  message: Personal data used for purposes other than disclosed
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule003
+  pattern: collect($EMAIL, $PHONE, $ADDRESS, $SSN, $DOB)
+  message: Excessive personal data collected
+  languages:
+  - javascript
+  - typescript
+  severity: WARNING
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule004
+  pattern-not: notify($USER) on $BREACH_DETECTION
+  message: Missing breach notification mechanism
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule005
+  pattern-not: provide($USER_RIGHTS_ENDPOINTS)
+  message: User rights implementation missing
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule006
+  pattern: const $ROLE = $REQ_BODY.ROLE
+  message: Client-provided authorization data detected
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule007
+  pattern: balance = getBalance(); if (balance > $AMOUNT) { debit(); }
+  message: Non-atomic financial transaction detected
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule008
+  pattern: http://$API_ENDPOINT
+  message: Insecure encryption protocol detected
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule009
+  pattern: modify($AUDIT_LOG)
+  message: Modifiable audit logs detected
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule010
+  pattern-not: rateLimit($SENSITIVE_OPERATION)
+  message: Rate limiting missing on sensitive operation
+  languages:
+  - javascript
+  - typescript
+  severity: WARNING
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule011
+  pattern-not: authenticate($USER)
+  message: Strong authentication missing
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule012
+  pattern-not: validate($USER_INPUT)
+  message: Input validation missing
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule013
+  pattern-not: preventUnauthorizedAccess($SENSITIVE_ENDPOINT)
+  message: Unauthorized access prevention missing
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule014
+  pattern: logger.info($SENSITIVE_DATA)
+  message: Sensitive personal data logged
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule015
+  pattern: selectiveDisclosure($INSIDER_INFO, $SPECIAL_USER)
+  message: Unfair trading practice detected
+  languages:
+  - javascript
+  - typescript
+  severity: ERROR
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule016
+  pattern-not: transparentPricing($TRANSACTION)
+  message: Transparent pricing missing
+  languages:
+  - javascript
+  - typescript
+  severity: WARNING
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule017
+  pattern-not: verifyDataAccuracy($DATA)
+  message: Data accuracy verification missing
+  languages:
+  - javascript
+  - typescript
+  severity: WARNING
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null
+- id: custom.policy.rule018
+  pattern-not: checkDataQuality($DATA)
+  message: Data quality checks missing
+  languages:
+  - javascript
+  - typescript
+  severity: WARNING
+  metadata:
+    source: groq_policy_translator
+    policy: custom
+    fix: null

@@ -1,0 +1,849 @@
+"""
+Compliance Analyzer - Refactored AI-Driven Orchestrator
+NEW ARCHITECTURE:
+  Step 1 (Fast Triage): AI repo profiling with Groq (GroqRepoProfiler)
+  Step 2 (Dynamic Rules): Policy → Semgrep YAML with Groq (GroqPolicyTranslator)
+  Step 3 (Detection): Execute Semgrep with dynamic rules
+  Step 4 (Mapping): Map violations to compliance frameworks
+  Step 5 (Gaps): Identify missing features based on AI profile
+"""
+
+import logging
+from typing import Dict, List, Any, Optional
+import asyncio
+from datetime import datetime
+import json
+import os
+from pathlib import Path
+from .semgrep_detector import SemgrepDetector
+from .finding_merger import FindingMerger
+from .groq_batch_mapper import GroqBatchMapper
+from .gap_analyzer import GapAnalyzer
+from .groq_repo_profiler import GroqRepoProfiler
+from .groq_policy_translator import GroqPolicyTranslator
+
+logger = logging.getLogger(__name__)
+
+class ComplianceAnalyzer:
+    """
+    AI-Driven Orchestrator - Refactored Pipeline
+    
+    NEW ARCHITECTURE:
+    Step 1 (AI Fast Triage): Groq profiles repo structure
+    Step 2 (Dynamic Rules): Groq translates policies to Semgrep YAML
+    Step 3 (Detection): Semgrep scans with dynamic rules
+    Step 4 (Mapping): Groq maps findings to frameworks
+    Step 5 (Gaps): AI identifies missing compliance features
+    """
+    
+    def __init__(self, policies_dir: str = "policies", groq_api_key: Optional[str] = None):
+        """
+        Initialize AI-driven compliance analyzer
+        
+        Args:
+            policies_dir: Directory for policy documents
+            groq_api_key: Groq API key (uses env var if not provided)
+        """
+        self.policies_dir = policies_dir
+        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY")
+        
+        # Core detection
+        self.semgrep_detector = SemgrepDetector()
+        self.finding_merger = FindingMerger()
+        
+        # AI components
+        if self.groq_api_key:
+            self.repo_profiler = GroqRepoProfiler(self.groq_api_key)  # Step 1
+            self.policy_translator = GroqPolicyTranslator(self.groq_api_key)  # Step 2
+            self.batch_mapper = GroqBatchMapper(self.groq_api_key)  # Step 4
+            self.gap_analyzer = GapAnalyzer(self.groq_api_key)  # Step 5
+        else:
+            logger.warning("Groq API key not found. AI components disabled.")
+            self.repo_profiler = None
+            self.policy_translator = None
+            self.batch_mapper = None
+            self.gap_analyzer = None
+        
+        logger.info("✓ AI-Driven Compliance Analyzer initialized")
+        logger.info("  Step 1: Repo Profiler ✓")
+        logger.info("  Step 2: Policy Translator ✓")
+        logger.info("  Step 3: Semgrep Detector ✓")
+        logger.info(f"  Step 4: Batch Mapper {'✓' if self.batch_mapper else '✗'}")
+        logger.info(f"  Step 5: Gap Analyzer {'✓' if self.gap_analyzer else '✗'}")
+    
+    async def analyze_repository_for_compliance(self, repo_path: str, custom_policy_text: Optional[str] = None, language: str = "javascript") -> Dict[str, Any]:
+        """
+        REFACTORED 5-STEP INTELLIGENCE PIPELINE
+        
+        Step 1: AI Fast Triage (GroqRepoProfiler)
+          - Analyzes repository structure and file tree
+          - Identifies where compliance features are implemented
+          
+        Step 2: Dynamic Semgrep Rules (GroqPolicyTranslator)
+          - Converts custom company policies to Semgrep YAML
+          - Uses compositional operators and taint analysis
+          
+        Step 3: Semgrep Execution
+          - Runs Semgrep with generated rules
+          - Produces ground-truth findings
+          
+        Step 4: Framework Mapping (GroqBatchMapper)
+          - Maps violations to compliance frameworks (DPDPA, RBI, IT Act)
+          - Batch processing to avoid rate limits
+          
+        Step 5: Gap Analysis (GapAnalyzer)
+          - Identifies missing compliance features
+          - Uses AI profiling instead of keywords
+        """
+        
+        try:
+            start_time = datetime.now()
+            logger.info(f"[AI-DRIVEN SCAN] Starting 5-step compliance analysis: {repo_path}")
+            
+            # Collect all source files
+            logger.info("[0/5] Collecting source files...")
+            all_files = self._collect_all_code_files(repo_path)
+            logger.info(f"  ✓ Found {len(all_files)} source files")
+            
+            # ========== STEP 1: AI FAST TRIAGE ==========
+            logger.info("[1/5] STEP 1 - AI Fast Triage (Groq Repo Profiler)...")
+            repo_profile = {}
+            if self.repo_profiler:
+                repo_profile = await self.repo_profiler.profile_repository(repo_path, all_files)
+                logger.info(f"  ✓ Profiled: {repo_profile.get('application_purpose', 'unknown')}")
+            
+            # ========== STEP 2: DYNAMIC SEMGREP RULES ==========
+            logger.info("[2/5] STEP 2 - Generating Dynamic Semgrep Rules...")
+            generated_rules_file = None
+            
+            if self.policy_translator and custom_policy_text:
+                policy_result = await self.policy_translator.translate_policy_to_semgrep_rules(
+                    custom_policy_text, 
+                    "custom_company_policy"
+                )
+                generated_rules_file = policy_result.get("output_file")
+                logger.info(f"  ✓ Generated {policy_result.get('rules_generated', 0)} custom rules")
+            else:
+                logger.info("  ⚠ Skipping custom policy translation (no policy provided)")
+            
+            # ========== STEP 3: SEMGREP EXECUTION ==========
+            logger.info("[3/5] STEP 3 - Executing Semgrep...")
+            semgrep_results = await self.semgrep_detector.scan_repository(repo_path)
+            semgrep_findings = semgrep_results.get("findings", [])
+            logger.info(f"  ✓ Semgrep: {len(semgrep_findings)} findings detected")
+            
+            # ========== STEP 4: FRAMEWORK MAPPING ==========
+            logger.info("[4/5] STEP 4 - Mapping to Compliance Frameworks...")
+            mapped_findings = []
+            
+            if self.batch_mapper and len(semgrep_findings) > 0:
+                mapped_findings = await self.batch_mapper.map_findings_to_compliance(semgrep_findings)
+                logger.info(f"  ✓ Mapped {len(mapped_findings)} findings to frameworks")
+            else:
+                mapped_findings = semgrep_findings
+                logger.info("  ⚠ Skipping Groq mapping (disabled or no findings)")
+            
+            # ========== STEP 5: GAP ANALYSIS ==========
+            logger.info("[5/5] STEP 5 - AI Gap Analysis...")
+            gaps = []
+            
+            if self.gap_analyzer:
+                gaps = await self.gap_analyzer.analyze_gaps(repo_path, all_files)
+                logger.info(f"  ✓ Found {len(gaps)} compliance gaps")
+            else:
+                logger.info("  ⚠ Gap analyzer not available")
+            
+            # ========== COMPLETE ANALYSIS ==========
+            logger.info("[COMPLETE] Building final compliance report...")
+            
+            all_violations = mapped_findings + gaps
+            
+            # Calculate statistics
+            stats = self.finding_merger.get_summary(all_violations)
+            
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            
+            logger.info(f"✓ SCAN COMPLETE in {duration:.1f}s")
+            logger.info(f"  Total violations: {len(all_violations)}")
+            logger.info(f"  Critical: {stats['by_severity'].get('critical', 0)} | High: {stats['by_severity'].get('high', 0)}")
+            
+            return {
+                "status": "completed",
+                "repository": repo_path,
+                "violations": all_violations[:100],  # Top 100
+                "total_violations": len(all_violations),
+                "gaps": gaps,
+                "severity_breakdown": stats["by_severity"],
+                "framework_breakdown": stats["by_framework"],
+                "detector_breakdown": stats["by_detector"],
+                "high_risk_files": stats["high_risk_files"],
+                "pipeline": {
+                    "step_1_ai_profiling": {"status": "complete", "findings": 1},
+                    "step_2_policy_translation": {"status": "complete", "custom_rules": generated_rules_file is not None},
+                    "step_3_semgrep_execution": {"status": "complete", "findings": len(semgrep_findings)},
+                    "step_4_framework_mapping": {"status": "complete", "mapped": len(mapped_findings)},
+                    "step_5_gap_analysis": {"status": "complete", "gaps": len(gaps)}
+                },
+                "repo_profile": repo_profile,
+                "generated_rules_file": generated_rules_file,
+                "scan_duration_seconds": duration,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"5-step scan failed: {e}", exc_info=True)
+            return {"error": str(e), "status": "failed"}
+    
+    def _collect_all_code_files(self, repo_path: str) -> List[str]:
+        """Collect ALL source code files, not just key files"""
+        code_files = []
+        repo_path = Path(repo_path)
+        
+        # Extensions to scan
+        extensions = {'.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.php', '.rb'}
+        
+        # Exclude patterns
+        excludes = {'.git', 'node_modules', '.venv', 'venv', 'build', 'dist', '__pycache__', '.pytest_cache'}
+        
+        for file_path in repo_path.rglob('*'):
+            # Skip excluded directories
+            if any(exclude in file_path.parts for exclude in excludes):
+                continue
+            
+            # Add code files
+            if file_path.is_file() and file_path.suffix in extensions:
+                code_files.append(str(file_path))
+        
+        return code_files[:500]  # Limit to 500 files for performance
+    
+    async def analyze_data_handling(self, code: str, context: Optional[Dict] = None) -> Dict[str, Any]:
+        """
+        Analyze data handling using full 4-stage pipeline
+        
+        Stages: 1 (Profile) → 2 (Policy Translation) → 3 (Context) → 4 (Remediation)
+        
+        Args:
+            code: Code to analyze
+            context: Additional context (file_path, project_type, etc.)
+            
+        Returns:
+            Complete analysis with remediation suggestions
+        """
+        if not self.groq_pipeline:
+            return {"error": "Groq pipeline not available"}
+        
+        if context is None:
+            context = {}
+        
+        try:
+            logger.info("[4-STAGE PIPELINE] Analyzing data handling with full pipeline execution")
+            
+            # Stage 1: Project Profiling
+            logger.debug("Stage 1: Project Profiling...")
+            profile = await self.groq_pipeline.stage_1_project_profiling(
+                repo_path=context.get("repo_path", "."),
+                metadata=context
+            )
+            
+            # Stage 3: Context Analysis for data handling violations
+            logger.debug("Stage 3: Context Analysis...")
+            context_analysis = await self.groq_pipeline.stage_3_context_analysis(
+                violation={
+                    "type": "data_handling",
+                    "framework": "DPDP"
+                },
+                code_snippet=code,
+                surrounding_context=profile
+            )
+            
+            # Stage 4: Auto-Remediation (if needed)
+            remediation = {}
+            if not context_analysis.get("is_false_positive"):
+                logger.debug("Stage 4: Auto-Remediation...")
+                remediation = await self.groq_pipeline.stage_4_auto_remediation(
+                    violation={
+                        "type": "data_handling",
+                        "risk_level": context_analysis.get("risk_assessment", "medium")
+                    },
+                    code_snippet=code,
+                    policy_context={"framework": "DPDP"}
+                )
+            
+            return {
+                "status": "completed",
+                "framework": "DPDP",
+                "project_profile": profile,
+                "validation": context_analysis,
+                "remediation": remediation,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Data handling analysis failed: {e}")
+            return {"error": str(e), "status": "failed"}
+    
+    async def check_rbi_compliance(self, code: str, system_type: str = "payment_system") -> Dict[str, Any]:
+        """
+        Check RBI compliance using full 4-stage pipeline
+        
+        Stages: 1 (Profile) → 2 (Policy Translation) → 3 (Context) → 4 (Remediation)
+        
+        Args:
+            code: Code to analyze
+            system_type: Type of system (payment_system, api_gateway, data_store, etc.)
+            
+        Returns:
+            RBI compliance assessment with remediation
+        """
+        if not self.groq_pipeline:
+            return {"error": "Groq pipeline not available", "rbi_compliant": False}
+        
+        try:
+            logger.info(f"[4-STAGE PIPELINE] Checking RBI compliance for {system_type}")
+            
+            # Stage 1: Profile system type
+            profile = await self.groq_pipeline.stage_1_project_profiling(
+                repo_path=".",
+                metadata={"system_type": system_type, "framework": "RBI"}
+            )
+            
+            # Stage 3: Validate RBI compliance
+            context_analysis = await self.groq_pipeline.stage_3_context_analysis(
+                violation={
+                    "type": "financial_system",
+                    "system_type": system_type,
+                    "framework": "RBI"
+                },
+                code_snippet=code,
+                surrounding_context=profile
+            )
+            
+            # Stage 4: Generate secure fixes if needed
+            remediation = {}
+            if not context_analysis.get("is_false_positive"):
+                remediation = await self.groq_pipeline.stage_4_auto_remediation(
+                    violation={
+                        "type": "rbi_compliance",
+                        "system_type": system_type
+                    },
+                    code_snippet=code,
+                    policy_context={"framework": "RBI"}
+                )
+            
+            return {
+                "status": "completed",
+                "framework": "RBI",
+                "system_type": system_type,
+                "rbi_compliant": context_analysis.get("is_false_positive") == False,
+                "confidence_score": context_analysis.get("confidence_score", 0),
+                "risk_assessment": context_analysis.get("risk_assessment", ""),
+                "remediation": remediation,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"RBI compliance check failed: {e}")
+            return {"error": str(e), "rbi_compliant": False, "status": "failed"}
+    
+    async def generate_remediation(self, violation: Dict[str, Any], code: str) -> Dict[str, Any]:
+        """
+        Generate remediation using Stage 4 of pipeline
+        
+        Stage 4: Auto-Remediation (llama-3.3-70b-versatile with temperature 0.4)
+        
+        Args:
+            violation: The compliance violation details
+            code: The problematic code
+            
+        Returns:
+            Remediation steps with implementation guide
+        """
+        if not self.groq_pipeline:
+            return {"error": "Groq pipeline not available"}
+        
+        try:
+            logger.info(f"[STAGE 4] Generating remediation for {violation.get('type')} violation")
+            
+            remediation = await self.groq_pipeline.stage_4_auto_remediation(
+                violation=violation,
+                code_snippet=code,
+                policy_context=violation
+            )
+            
+            return {
+                "status": "completed",
+                "violation_type": violation.get("type"),
+                "remediation": remediation,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Remediation generation failed: {e}")
+            return {"error": str(e), "status": "failed"}
+    
+    def get_compliance_status(self) -> Dict[str, Any]:
+        """Get system compliance status and pipeline health"""
+        if not self.groq_pipeline:
+            return {"status": "unavailable", "error": "Groq pipeline not initialized"}
+        
+        try:
+            pipeline_status = self.groq_pipeline.get_pipeline_status()
+            policy_stats = self.policy_manager.get_policy_statistics() if self.policy_manager else {}
+            semgrep_status = self.semgrep_executor.get_executor_status() if self.semgrep_executor else {}
+            
+            return {
+                "status": "ready",
+                "pipeline": pipeline_status,
+                "policies": policy_stats,
+                "scanning": semgrep_status,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Failed to get compliance status: {e}")
+            return {"status": "error", "error": str(e)}
+    
+    def _check_code_patterns_fast(
+        self,
+        file_path: str,
+        repo_path: str
+    ) -> List[Dict[str, Any]]:
+        """Fast pattern-based violation detection (NO API CALLS)"""
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            
+            if len(content) < 50:  # Skip tiny files
+                return []
+            
+            file_name = Path(file_path).name
+            ext = Path(file_path).suffix
+            
+            # Use existing pattern detection
+            return self._check_code_patterns(
+                content=content,
+                file_name=file_name,
+                file_path=file_path,
+                ext=ext
+            )
+            
+        except Exception as e:
+            logger.debug(f"File analysis error for {file_path}: {e}")
+            return []
+    
+    def _check_code_patterns(
+        self,
+        content: str,
+        file_name: str,
+        file_path: str,
+        ext: str
+    ) -> List[Dict[str, Any]]:
+        """Detect security anti-patterns and compliance violations"""
+        violations = []
+        
+        # DPDPA violations
+        if 'password' in content.lower() and ('minlength: 6' in content or 'min: 6' in content):
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "IT_ACT_2000",
+                "severity": "high",
+                "type": "weak_password_policy",
+                "issue": "Password minimum length is only 6 characters. IT Act 2000 requires minimum 8 characters with complexity rules.",
+                "confidence_score": 0.95,
+                "language": ext.replace('.', '')
+            })
+        
+        # Hardcoded secrets
+        if any(secret in content for secret in [
+            'your-secret-key', 'your-refresh-secret', 'your-super-secret-jwt-key',
+            'changeme', 'default', 'password123', 'admin123'
+        ]):
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "IT_ACT_2000",
+                "severity": "critical",
+                "type": "hardcoded_secrets",
+                "issue": "Hardcoded or default credentials/secrets found in source code. Violates IT Act 2000 security requirements.",
+                "confidence_score": 0.98,
+                "language": ext.replace('.', '')
+            })
+        
+        # No CORS restriction
+        if 'cors' in content.lower() and ('origin: true' in content or 'origin: *' in content or 'origin: \"*\"' in content):
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "RBI",
+                "severity": "high",
+                "type": "cors_misconfiguration",
+                "issue": "CORS allows all origins. RBI security guidelines require strict origin whitelisting.",
+                "confidence_score": 0.95,
+                "language": ext.replace('.', '')
+            })
+        
+        # No encryption
+        if ('password' in content.lower() or 'token' in content.lower() or 'email' in content.lower()) and \
+           'encrypt' not in content.lower() and 'hash' not in content.lower() and 'bcrypt' not in content.lower():
+            if 'plaintext' in content.lower() or '.toString()' in content or 'JSON.stringify' in content:
+                violations.append({
+                    "file": file_name,
+                    "file_path": str(file_path),
+                    "framework": "IT_ACT_2000",
+                    "severity": "critical",
+                    "type": "no_encryption",
+                    "issue": "Sensitive data (passwords/tokens/PII) not encrypted. Violates SPDI Rules under IT Act 2000.",
+                    "confidence_score": 0.90,
+                    "language": ext.replace('.', '')
+                })
+        
+        # No audit logging
+        if file_name in ['auth.js', 'user.js', 'authController.js'] and 'console.log' in content and 'audit' not in content.lower():
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "RBI",
+                "severity": "high",
+                "type": "no_audit_log",
+                "issue": "Authentication events logged to console only. RBI requires persistent, structured audit logs with 3-year retention.",
+                "confidence_score": 0.85,
+                "language": ext.replace('.', '')
+            })
+        
+        # Plaintext PII logging
+        if 'email' in content.lower() and 'console.log' in content:
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "DPDPA",
+                "severity": "high",
+                "type": "pii_logging",
+                "issue": "Personal data (email addresses) logged without encryption. DPDPA requires protection of personal data.",
+                "confidence_score": 0.85,
+                "language": ext.replace('.', '')
+            })
+        
+        # No rate limiting
+        if '/register' in content or 'register' in file_name.lower() and 'rateLimit' not in content:
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "RBI",
+                "severity": "medium",
+                "type": "no_rate_limiting",
+                "issue": "No rate limiting on registration endpoint. Allows brute force and account enumeration attacks.",
+                "confidence_score": 0.80,
+                "language": ext.replace('.', '')
+            })
+        
+        # Unauthenticated endpoints
+        if 'router.get' in content or 'app.get' in content:
+            if 'export' in content.lower() and 'authenticate' not in content and 'auth' not in content:
+                violations.append({
+                    "file": file_name,
+                    "file_path": str(file_path),
+                    "framework": "IT_ACT_2000",
+                    "severity": "critical",
+                    "type": "unauthenticated_endpoint",
+                    "issue": "Unauthenticated endpoint exposing data (/export/). IT Act 2000 requires authentication for data access.",
+                    "confidence_score": 0.90,
+                    "language": ext.replace('.', '')
+                })
+        
+        # No HTTPS/TLS enforcement
+        if 'http://' in content and 'https' not in content and '.env' not in file_name:
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "RBI",
+                "severity": "high",
+                "type": "no_tls",
+                "issue": "HTTP used without HTTPS enforcement. RBI requires TLS for all data transmission.",
+                "confidence_score": 0.85,
+                "language": ext.replace('.', '')
+            })
+        
+        # No MFA
+        if 'login' in file_name.lower() and 'password' in content and 'mfa' not in content.lower() and 'otp' not in content.lower() and 'totp' not in content.lower():
+            violations.append({
+                "file": file_name,
+                "file_path": str(file_path),
+                "framework": "RBI",
+                "severity": "high",
+                "type": "no_mfa",
+                "issue": "Multi-factor authentication (MFA) not implemented. RBI guidelines require MFA for admin/sensitive access.",
+                "confidence_score": 0.85,
+                "language": ext.replace('.', '')
+            })
+        
+        return violations
+    
+    def _check_missing_features_fast(
+        self,
+        repo_path: str,
+        all_files: List[str],
+        profile: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """Fast detection of MISSING compliance features (NO API CALLS)"""
+        violations = []
+        files_content = '\n'.join([Path(f).name for f in all_files])
+        
+        # Check for missing required mechanisms
+        checks = [
+            {
+                "feature": "consent_mechanism",
+                "patterns": ["consent", "permission", "agree", "accept"],
+                "violation": "No user consent mechanism found. DPDPA requires explicit consent before processing personal data.",
+                "framework": "DPDPA",
+                "severity": "critical"
+            },
+            {
+                "feature": "data_retention_policy",
+                "patterns": ["retention", "ttl", "expiration", "delete", "purge"],
+                "violation": "No data retention/deletion policy implemented. DPDPA requires data to be erased after purpose is served.",
+                "framework": "DPDPA",
+                "severity": "high"
+            },
+            {
+                "feature": "privacy_policy",
+                "patterns": ["privacy", "policy", "terms"],
+                "violation": "No privacy policy document found. IT Act 2000 SPDI Rules require published privacy policy.",
+                "framework": "IT_ACT_2000",
+                "severity": "high"
+            },
+            {
+                "feature": "breach_notification",
+                "patterns": ["breach", "incident", "alert", "notification", "report"],
+                "violation": "No data breach detection/notification system. DPDPA requires 72-hour breach reporting to users and Board.",
+                "framework": "DPDPA",
+                "severity": "critical"
+            },
+            {
+                "feature": "user_rights",
+                "patterns": ["download", "export", "access", "erasure", "deletion", "right"],
+                "violation": "No mechanism for users to access/download/delete their personal data. DPDPA requires user data rights endpoints.",
+                "framework": "DPDPA",
+                "severity": "critical"
+            },
+            {
+                "feature": "security_headers",
+                "patterns": ["helmet", "hsts", "csp", "x-frame", "security"],
+                "violation": "No security headers configured. Missing Helmet.js, CSP, HSTS, X-Frame-Options headers.",
+                "framework": "RBI",
+                "severity": "high"
+            },
+            {
+                "feature": "input_sanitization",
+                "patterns": ["sanitize", "xss", "sql", "injection", "escape"],
+                "violation": "No input sanitization/validation framework evident. Vulnerable to XSS/NoSQL injection attacks.",
+                "framework": "IT_ACT_2000",
+                "severity": "high"
+            }
+        ]
+        
+        for check in checks:
+            found = any(pattern in files_content.lower() for pattern in check["patterns"])
+            if not found:
+                violations.append({
+                    "file": "repository-level",
+                    "type": f"missing_{check['feature']}",
+                    "framework": check["framework"],
+                    "severity": check["severity"],
+                    "issue": check["violation"],
+                    "confidence_score": 0.95
+                })
+        
+        return violations
+    
+    def _collect_all_code_files(self, repo_path: str) -> List[str]:
+        """Collect ALL source code files, not just key files"""
+        code_files = []
+        repo_path = Path(repo_path)
+        
+        # Extensions to scan
+        extensions = {'.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.php', '.rb'}
+        
+        # Exclude patterns
+        excludes = {'.git', 'node_modules', '.venv', 'venv', 'build', 'dist', '__pycache__', '.pytest_cache'}
+        
+        for file_path in repo_path.rglob('*'):
+            # Skip excluded directories
+            if any(exclude in file_path.parts for exclude in excludes):
+                continue
+            
+            # Add code files
+            if file_path.is_file() and file_path.suffix in extensions:
+                code_files.append(str(file_path))
+        
+        return code_files[:100]  # Limit to 100 files for performance
+    
+    def _calculate_severity_breakdown(self, violations: List[Dict[str, Any]]) -> Dict[str, int]:
+        """Calculate severity breakdown of violations"""
+        breakdown = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+        for v in violations:
+            severity = v.get("severity", "medium").lower()
+            if severity in breakdown:
+                breakdown[severity] += 1
+        return breakdown
+    
+    # Deprecated methods kept for backward compatibility
+    def analyze_text(self, text: str, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+        """
+        Deprecated: Use analyze_code() instead
+        This is kept for backward compatibility
+        """
+        logger.warning("analyze_text() is deprecated. Use analyze_code() instead.")
+        return self.analyze_code(text, "text")
+    
+    def get_pipeline_status(self) -> Dict[str, Any]:
+        """Get status of 4-stage pipeline components"""
+        return {
+            "status": "operational" if self.groq_pipeline else "degraded",
+            "components": {
+                "groq_pipeline_orchestrator": self.groq_pipeline is not None,
+                "policy_manager": self.policy_manager is not None,
+                "semgrep_executor": self.semgrep_executor is not None
+            },
+            "stages": {
+                "stage_1_profiling": True,  # llama-3.1-8b-instant
+                "stage_2_policy_translation": self.policy_manager is not None,  # Semgrep
+                "stage_3_context_analysis": True,  # qwen/qwen3-32b
+                "stage_4_auto_remediation": True  # llama-3.3-70b-versatile
+            },
+            "active_components": [
+                name for name, available in [
+                    ("groq_pipeline", self.groq_pipeline is not None),
+                    ("policy_manager", self.policy_manager is not None),
+                    ("semgrep_executor", self.semgrep_executor is not None)
+                ] if available
+            ],
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    # ============================================================
+    # POLICY MANAGEMENT METHODS (Using 4-Stage Pipeline)
+    # ============================================================
+    
+    async def ingest_custom_policy(self, policy_name: str, policy_text: str, 
+                                   policy_type: str = "compliance") -> Dict[str, Any]:
+        """
+        Ingest and process custom company policy
+        
+        Uses Stage 2: Policy Translation to convert policy to Semgrep rules
+        
+        Args:
+            policy_name: Name of the policy
+            policy_text: Full policy document text
+            policy_type: Type (compliance, security, financial, etc.)
+            
+        Returns:
+            Policy ingestion results with generated rules
+        """
+        if not self.policy_manager or not self.groq_pipeline:
+            return {"error": "Policy management not available"}
+        
+        try:
+            logger.info(f"[STAGE 2] Ingesting custom policy: {policy_name}")
+            
+            # Ingest policy
+            policy_id = self.policy_manager.ingest_policy(
+                policy_name=policy_name,
+                policy_text=policy_text,
+                policy_type=policy_type
+            )
+            
+            # Stage 2: Translate policy to rules
+            translation_result = await self.groq_pipeline.stage_2_policy_translation(
+                policy_document=policy_text,
+                policy_id=policy_id
+            )
+            
+            # Store generated rules
+            self.policy_manager.store_generated_rules(
+                policy_id=policy_id,
+                rules=translation_result.get("rules", [])
+            )
+            
+            logger.info(f"Policy {policy_name} ingested with {len(translation_result.get('rules', []))} rules")
+            
+            return {
+                "status": "completed",
+                "policy_id": policy_id,
+                "policy_name": policy_name,
+                "rules_generated": len(translation_result.get("rules", [])),
+                "coverage": translation_result.get("coverage_percentage", 0),
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Policy ingestion failed: {e}")
+            return {"error": str(e), "status": "failed"}
+    
+    def get_policy_rules(self, policy_id: str) -> Dict[str, Any]:
+        """Get Semgrep-compatible rules for a policy"""
+        if not self.policy_manager:
+            return {"error": "Policy manager not available"}
+        
+        try:
+            rules = self.policy_manager.export_rules_for_semgrep(policy_id)
+            return {
+                "status": "ok",
+                "policy_id": policy_id,
+                "rules": rules,
+                "format": "semgrep_yaml"
+            }
+        except Exception as e:
+            logger.error(f"Failed to get policy rules: {e}")
+            return {"error": str(e)}
+    
+    def get_all_policies(self) -> Dict[str, Any]:
+        """Get summary of all ingested policies"""
+        if not self.policy_manager:
+            return {"error": "Policy manager not available"}
+        
+        try:
+            stats = self.policy_manager.get_policy_statistics()
+            return {
+                "status": "ok",
+                "statistics": stats,
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(f"Failed to get policies: {e}")
+            return {"error": str(e)}
+    
+    # ============================================================
+    # DEPRECATED METHODS (Kept for Backward Compatibility)
+    # ============================================================
+    
+    def analyze_text(self, text: str, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+        """
+        Deprecated: Use analyze_code() or async methods instead
+        """
+        logger.warning("analyze_text() is deprecated. Use analyze_code() instead.")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(self.analyze_code(text, "text"))
+        loop.close()
+        return result
+
+
+# ============================================
+# COMPLIANCE ANALYZER UTILITY FUNCTIONS
+# ============================================
+
+def create_analyzer() -> ComplianceAnalyzer:
+    """Factory function to create compliance analyzer instance"""
+    return ComplianceAnalyzer()
+
+
+async def run_compliance_pipeline(repo_path: str, policy_doc: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Standalone function to run complete 4-stage compliance pipeline
+    
+    Args:
+        repo_path: Repository to scan
+        policy_doc: Optional custom policy document
+        
+    Returns:
+        Complete pipeline analysis results
+    """
+    analyzer = create_analyzer()
+    return await analyzer.analyze_repository_for_compliance(repo_path, policy_doc)
